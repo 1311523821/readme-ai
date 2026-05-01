@@ -56,25 +56,25 @@ textarea{resize:vertical;min-height:80px;line-height:1.6}
 
 /* RADIO CARDS */
 .radio-cards{display:flex;flex-direction:column;gap:6px}
-.radio-card{display:flex;align-items:center;gap:10px;background:var(--bg);border:1px solid var(--border);border-radius:var(--r);padding:10px 12px;cursor:pointer;transition:.2s;user-select:none}
+.radio-card{display:flex;align-items:center;gap:10px;background:var(--bg);border:2px solid var(--border);border-radius:10px;padding:12px 14px;cursor:pointer;transition:.2s;user-select:none}
 .radio-card:hover{border-color:#D4B896;background:#FFF0E0}
-.radio-card.active{border-color:var(--accent);background:var(--accent-s)}
+.radio-card.active{border-color:var(--accent);background:var(--accent-s);box-shadow:0 0 0 3px rgba(255,105,0,.08)}
 .radio-card input[type=radio]{display:none}
 .radio-card-icon{font-size:1.2rem;width:28px;text-align:center;flex-shrink:0}
 .radio-card-label{font-size:.85rem;color:var(--text);font-weight:500}
 .radio-card-desc{font-size:.75rem;color:var(--text2);margin-top:1px}
 
 /* DETAIL CARDS */
-.detail-cards{display:flex;gap:8px}
-.detail-card{flex:1;background:var(--bg);border:1px solid var(--border);border-radius:var(--r);padding:10px;text-align:center;cursor:pointer;transition:.2s;user-select:none}
+.detail-cards{display:flex;gap:12px}
+.detail-card{flex:1;background:var(--bg);border:2px solid var(--border);border-radius:10px;padding:14px;text-align:center;cursor:pointer;transition:.2s;user-select:none}
 .detail-card:hover{border-color:#D4B896}
-.detail-card.active{border-color:var(--accent);background:var(--accent-s)}
+.detail-card.active{border-color:var(--accent);background:var(--accent-s);box-shadow:0 0 0 3px rgba(255,105,0,.08)}
 .detail-card input[type=radio]{display:none}
 .detail-card-title{font-size:.82rem;font-weight:600;color:var(--text);margin-bottom:2px}
 .detail-card-desc{font-size:.72rem;color:var(--text2)}
 
 /* DROPZONE */
-.dropzone{border:2px dashed var(--border);border-radius:var(--r);padding:24px 16px;text-align:center;cursor:pointer;transition:.2s}
+.dropzone{border:2px dashed var(--border);border-radius:10px;padding:28px 16px;text-align:center;cursor:pointer;transition:.2s;background:var(--bg)}
 .dropzone:hover,.dropzone.dragover{border-color:var(--accent);background:var(--accent-s)}
 .dropzone input[type=file]{display:none}
 .dropzone-icon{font-size:2rem;margin-bottom:6px}
@@ -224,10 +224,23 @@ textarea{resize:vertical;min-height:80px;line-height:1.6}
 .left-empty-icon{font-size:2rem;margin-bottom:8px;opacity:.4}
 .left-empty-text{font-size:.8rem}
 
-/* INPUT AREA (shown in right panel when creating new) */
-.input-area{max-width:680px;margin:0 auto;padding:24px}
-.input-section{background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);padding:16px;margin-bottom:16px}
-.input-section-title{font-size:.82rem;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:.04em;margin-bottom:12px}
+/* INPUT AREA */
+.input-area{max-width:720px;margin:40px auto;padding:0 24px}
+.new-card{background:var(--bg3);border:1px solid var(--border);border-radius:12px;padding:28px 32px;box-shadow:0 2px 12px rgba(0,0,0,.04)}
+.new-card-header{text-align:center;margin-bottom:28px}
+.new-card-icon{font-size:2.4rem;margin-bottom:8px}
+.new-card-title{font-size:1.3rem;font-weight:700;color:var(--text);font-family:var(--serif)}
+.new-card-sub{font-size:.85rem;color:var(--text2);margin-top:4px}
+.new-divider{height:1px;background:var(--border);margin:20px 0}
+.new-label{font-size:.78rem;font-weight:600;color:var(--text2);letter-spacing:.03em;margin-bottom:10px;display:block}
+.new-row{display:flex;gap:12px;margin-bottom:20px}
+.new-row .radio-card{flex:1}
+.new-book-input{width:100%;background:var(--bg);border:2px solid var(--border);border-radius:10px;color:var(--text);font-family:var(--serif);font-size:1.1rem;padding:14px 16px;outline:none;transition:.2s}
+.new-book-input:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-s)}
+.new-book-input::placeholder{color:var(--text3);font-style:italic}
+.new-actions{display:flex;gap:12px;margin-top:24px;align-items:center}
+.new-actions .generate-btn{flex:1;font-size:1rem;padding:14px 24px;border-radius:10px}
+.new-hint{font-size:.78rem;color:var(--text3);text-align:center;margin-top:16px}
 
 /* RESPONSIVE */
 @media(max-width:768px){
@@ -277,55 +290,57 @@ textarea{resize:vertical;min-height:80px;line-height:1.6}
 
     <!-- Input area (shown when creating new) -->
     <div class="input-area hidden" id="inputArea">
-      <div class="input-section">
-        <div class="input-section-title">📥 输入方式</div>
-        <div class="radio-cards">
+      <div class="new-card">
+        <div class="new-card-header">
+          <div class="new-card-icon">📖</div>
+          <div class="new-card-title">开始新的代读</div>
+          <div class="new-card-sub">输入书名或上传电子书，AI 为你生成深度读书报告</div>
+        </div>
+
+        <label class="new-label">选择输入方式</label>
+        <div class="new-row">
           <label class="radio-card active" data-mode="search">
             <input type="radio" name="inputMode" value="search" checked>
             <span class="radio-card-icon">🔍</span>
-            <div><div class="radio-card-label">书名搜索</div><div class="radio-card-desc">输入书名即可</div></div>
+            <div><div class="radio-card-label">书名</div><div class="radio-card-desc">输入书名即可</div></div>
           </label>
           <label class="radio-card" data-mode="upload">
             <input type="radio" name="inputMode" value="upload">
             <span class="radio-card-icon">📁</span>
-            <div><div class="radio-card-label">文件上传</div><div class="radio-card-desc">PDF / EPUB / TXT</div></div>
+            <div><div class="radio-card-label">文件</div><div class="radio-card-desc">PDF / EPUB / TXT</div></div>
           </label>
           <label class="radio-card" data-mode="paste">
             <input type="radio" name="inputMode" value="paste">
             <span class="radio-card-icon">📋</span>
-            <div><div class="radio-card-label">粘贴文本</div><div class="radio-card-desc">直接粘贴内容</div></div>
+            <div><div class="radio-card-label">粘贴</div><div class="radio-card-desc">直接粘贴内容</div></div>
           </label>
         </div>
-      </div>
 
-      <div class="input-section" id="searchInputCard">
-        <div class="input-section-title">📖 书名</div>
-        <div class="form-group">
-          <input type="text" id="bookTitle" placeholder="例如：思考，快与慢">
+        <div id="searchInputCard">
+          <label class="new-label">书名</label>
+          <input type="text" id="bookTitle" class="new-book-input" placeholder="例如：思考，快与慢" autofocus>
         </div>
-      </div>
 
-      <div class="input-section hidden" id="uploadInputCard">
-        <div class="input-section-title">📁 上传文件</div>
-        <div class="dropzone" id="dropzone">
-          <input type="file" id="fileInput" accept=".pdf,.epub,.txt,.md">
-          <div class="dropzone-icon">⬆️</div>
-          <div class="dropzone-text">拖放文件到此处，或 <strong>点击选择</strong></div>
-          <div class="dropzone-hint">支持 PDF、EPUB、TXT、MD</div>
-          <div class="dropzone-filename hidden" id="dropzoneFilename"></div>
+        <div class="hidden" id="uploadInputCard">
+          <label class="new-label">上传文件</label>
+          <div class="dropzone" id="dropzone">
+            <input type="file" id="fileInput" accept=".pdf,.epub,.txt,.md">
+            <div class="dropzone-icon">⬆️</div>
+            <div class="dropzone-text">拖放文件到此处，或 <strong>点击选择</strong></div>
+            <div class="dropzone-hint">支持 PDF、EPUB、TXT、MD</div>
+            <div class="dropzone-filename hidden" id="dropzoneFilename"></div>
+          </div>
         </div>
-      </div>
 
-      <div class="input-section hidden" id="pasteInputCard">
-        <div class="input-section-title">📋 粘贴文本</div>
-        <div class="form-group">
-          <textarea id="pasteText" rows="6" placeholder="在此粘贴书籍内容..."></textarea>
+        <div class="hidden" id="pasteInputCard">
+          <label class="new-label">粘贴书籍内容</label>
+          <textarea id="pasteText" rows="6" placeholder="在此粘贴书籍内容..." style="width:100%;background:var(--bg);border:2px solid var(--border);border-radius:10px;color:var(--text);font-family:var(--serif);font-size:.95rem;padding:14px 16px;outline:none;resize:vertical;line-height:1.7"></textarea>
         </div>
-      </div>
 
-      <div class="input-section">
-        <div class="input-section-title">📊 详细程度</div>
-        <div class="detail-cards">
+        <div class="new-divider"></div>
+
+        <label class="new-label">详细程度</label>
+        <div class="new-row">
           <label class="detail-card active" data-level="standard">
             <input type="radio" name="detailLevel" value="standard" checked>
             <div class="detail-card-title">标准版</div>
@@ -337,9 +352,13 @@ textarea{resize:vertical;min-height:80px;line-height:1.6}
             <div class="detail-card-desc">8000–12000 字</div>
           </label>
         </div>
-      </div>
 
-      <button class="btn btn-primary generate-btn" id="generateBtn">🚀 开始代读</button>
+        <div class="new-actions">
+          <button class="btn btn-primary generate-btn" id="generateBtn">🚀 开始代读</button>
+        </div>
+
+        <div class="new-hint">报告将直接在右侧生成，历史自动保存在左侧</div>
+      </div>
     </div>
 
     <!-- Report area -->
