@@ -49,6 +49,10 @@ a{color:var(--accent);text-decoration:none}a:hover{color:var(--accent-h)}
 /* FORMS */
 label{display:block;font-size:.82rem;color:var(--text2);margin-bottom:4px}
 input[type=text],input[type=password],input[type=url],input[type=search],select,textarea{width:100%;background:var(--bg);border:1px solid var(--border);border-radius:var(--r);color:var(--text);font-family:var(--ui);font-size:.85rem;padding:8px 10px;outline:none;transition:.2s}
+.pw-wrap{position:relative;display:flex;align-items:center}
+.pw-wrap input{padding-right:36px}
+.pw-toggle{position:absolute;right:8px;background:none;border:none;cursor:pointer;font-size:1rem;color:var(--text2);padding:4px;line-height:1}
+.pw-toggle:hover{color:var(--accent)}
 input:focus,select:focus,textarea:focus{border-color:var(--accent)}
 input::placeholder,textarea::placeholder{color:var(--text3)}
 select{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%23888' viewBox='0 0 16 16'%3E%3Cpath d='M8 11L3 6h10z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center;padding-right:28px}
@@ -248,7 +252,10 @@ textarea{resize:vertical;min-height:80px;line-height:1.6}
       </div>
       <div class="form-group">
         <label for="apiKey">API Key</label>
-        <input type="password" id="apiKey" placeholder="sk-...">
+        <div class="pw-wrap">
+          <input type="password" id="apiKey" placeholder="sk-...">
+          <button type="button" class="pw-toggle" id="pwToggle" title="显示/隐藏">👁</button>
+        </div>
       </div>
       <div class="form-group">
         <label for="baseUrl">Base URL</label>
@@ -851,6 +858,14 @@ document.addEventListener('DOMContentLoaded', ()=>{
   ['apiKey','baseUrl','modelName','provider'].forEach(id=>{ const el=$('#'+id); if(el) el.addEventListener('change',saveCfg); });
 
   // Save config button
+  // Password toggle
+  const pwToggle=$('#pwToggle');
+  if(pwToggle) pwToggle.addEventListener('click',()=>{
+    const inp=$('#apiKey');
+    if(inp.type==='password'){inp.type='text';pwToggle.textContent='🙈';}
+    else{inp.type='password';pwToggle.textContent='👁';}
+  });
+
   const saveBtn=$('#saveConfig');
   if(saveBtn) saveBtn.addEventListener('click',()=>{saveCfg();status('配置已保存','ok');});
 
