@@ -1330,14 +1330,15 @@ function setupDragDrop(){
 
   container.addEventListener('dragover', e => {
     e.preventDefault();
-    const item = e.target.closest('.report-item, .folder-item');
+    const item = e.target.closest('.folder-item');
     if (item && item.dataset.folder) {
       item.classList.add('drag-over');
     }
+    // 拖到空白区域也允许
   });
 
   container.addEventListener('dragleave', e => {
-    const item = e.target.closest('.report-item, .folder-item');
+    const item = e.target.closest('.folder-item');
     if (item) item.classList.remove('drag-over');
   });
 
@@ -1346,7 +1347,14 @@ function setupDragDrop(){
     const target = e.target.closest('.folder-item');
     $$('.drag-over').forEach(el => el.classList.remove('drag-over'));
 
-    if (!draggedItem || !target) return;
+    if (!draggedItem) return;
+
+    // 拖到空白区域/非文件夹 -> 移到 root（未分类）
+    if (!target) {
+      moveItem(draggedItem, 'root', draggedType === 'folder');
+      renderLeftList();
+      return;
+    }
 
     const targetId = target.dataset.folder;
     if (!targetId || targetId === draggedItem) return;
