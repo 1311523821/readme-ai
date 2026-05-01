@@ -97,13 +97,11 @@ readme-ai/
 │   └── purify.min.js       # XSS 防护（本地化）
 ├── desktop.py              # 桌面应用入口（pywebview）
 ├── build_exe.py            # PyInstaller 打包脚本（跨平台）
-├── app.py                  # Streamlit 版（可选）
 ├── engine.py               # 代读引擎（提示词 + LLM 调用）
 ├── parsers.py              # 文件解析（PDF/EPUB/TXT）
 ├── storage.py              # 存储（SQLite + Markdown）
 ├── config.py               # 配置管理
 ├── requirements.txt        # Python 依赖
-├── Dockerfile              # Docker 部署
 └── data/                   # 报告存储目录
 ```
 
