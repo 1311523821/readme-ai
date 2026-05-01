@@ -248,6 +248,58 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
 .left-empty-icon{font-size:2rem;margin-bottom:8px;opacity:.4}
 .left-empty-text{font-size:.8rem}
 
+/* 文件夹树 */
+.left-toolbar{padding:8px 10px;display:flex;gap:6px;border-bottom:1px solid var(--border)}
+.left-toolbar .btn{flex:1;font-size:.75rem;padding:4px 8px}
+.folder-item{display:flex;align-items:center;gap:6px;padding:6px 10px;cursor:pointer;border-radius:var(--r);margin-bottom:1px;font-size:.82rem;color:var(--text2);user-select:none}
+.folder-item:hover{background:var(--accent-s);color:var(--text)}
+.folder-item.active{background:var(--accent-s);color:var(--accent)}
+.folder-item.drag-over{background:var(--accent-s);border:2px dashed var(--accent)}
+.folder-icon{font-size:.9rem;transition:transform .15s;width:16px;text-align:center}
+.folder-item.collapsed .folder-icon{transform:rotate(-90deg)}
+.folder-name{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.folder-count{font-size:.7rem;color:var(--text3);background:var(--bg);padding:1px 6px;border-radius:10px}
+.folder-children{padding-left:12px;border-left:1px dashed var(--border);margin-left:8px}
+.folder-children.collapsed{display:none}
+.report-item{display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:var(--r);cursor:pointer;margin-bottom:1px;font-size:.8rem;color:var(--text2);border:1px solid transparent;transition:.12s;user-select:none}
+.report-item:hover{background:var(--accent-s);color:var(--text);border-color:var(--border)}
+.report-item.active{background:var(--accent-s);color:var(--accent);border-color:var(--accent)}
+.report-item.dragging{opacity:.4}
+.report-item.drag-over{background:var(--accent-s);border:2px dashed var(--accent)}
+.report-icon{font-size:.85rem;flex-shrink:0}
+.report-text{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.report-meta{font-size:.68rem;color:var(--text3);margin-top:1px}
+.report-tags{display:flex;gap:2px;margin-top:3px;flex-wrap:wrap}
+.report-tag{font-size:.65rem;padding:1px 5px;background:var(--accent-s);color:var(--accent);border-radius:8px;cursor:pointer}
+.report-tag:hover{background:var(--accent);color:#fff}
+.report-del{opacity:0;background:none;border:none;color:var(--err);cursor:pointer;font-size:.7rem;padding:2px 4px;border-radius:3px;flex-shrink:0}
+.report-item:hover .report-del{opacity:.7}
+.report-del:hover{opacity:1!important}
+
+/* 右键菜单 */
+.context-menu{position:fixed;background:var(--bg3);border:1px solid var(--border);border-radius:8px;box-shadow:0 4px 16px rgba(0,0,0,.15);z-index:300;min-width:140px;padding:4px 0;display:none}
+.context-menu.show{display:block}
+.context-item{display:flex;align-items:center;gap:8px;padding:8px 14px;font-size:.82rem;color:var(--text);cursor:pointer}
+.context-item:hover{background:var(--accent-s);color:var(--accent)}
+.context-item.danger{color:var(--err)}
+.context-item.danger:hover{background:rgba(239,83,80,.1)}
+.context-divider{height:1px;background:var(--border);margin:4px 0}
+
+/* 标签筛选 */
+.tag-filter{padding:8px 10px;border-bottom:1px solid var(--border);display:none}
+.tag-filter.show{display:flex;flex-wrap:wrap;gap:4px;align-items:center}
+.tag-filter-label{font-size:.75rem;color:var(--text3);margin-right:4px}
+.tag-filter-tag{font-size:.72rem;padding:3px 8px;background:var(--bg);border:1px solid var(--border);border-radius:12px;cursor:pointer;color:var(--text2)}
+.tag-filter-tag:hover{background:var(--accent-s);border-color:var(--accent);color:var(--accent)}
+.tag-filter-tag.active{background:var(--accent);border-color:var(--accent);color:#fff}
+
+/* 新建文件夹弹窗 */
+.input-dialog{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:var(--bg3);border:1px solid var(--border);border-radius:12px;padding:20px;z-index:400;min-width:280px;box-shadow:0 8px 32px rgba(0,0,0,.2);display:none}
+.input-dialog.show{display:block}
+.input-dialog h3{font-size:1rem;margin-bottom:12px;color:var(--text)}
+.input-dialog input{width:100%;margin-bottom:12px}
+.input-dialog .btn-group{display:flex;gap:8px;justify-content:flex-end}
+
 /* INPUT AREA */
 .input-area{max-width:720px;margin:40px auto;padding:0 24px}
 .new-card{background:var(--bg3);border:1px solid var(--border);border-radius:12px;padding:28px 32px;box-shadow:0 2px 12px rgba(0,0,0,.04)}
@@ -294,12 +346,35 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
       <span class="left-header-title">📚 已读</span>
       <button class="btn-new" id="btnNew" aria-label="新建报告">+ 新建</button>
     </div>
+    <div class="left-toolbar">
+      <button class="btn btn-sm" id="btnNewFolder" title="新建文件夹">📁 新文件夹</button>
+    </div>
+    <div class="tag-filter" id="tagFilter"></div>
     <div class="left-list" id="leftList"></div>
     <div class="left-empty" id="leftEmpty">
       <div class="left-empty-icon">📚</div>
       <div class="left-empty-text">还没有阅读报告<br>点击「+ 新建」开始你的 AI 代读之旅</div>
     </div>
   </aside>
+
+  <!-- 右键菜单 -->
+  <div class="context-menu" id="contextMenu">
+    <div class="context-item" data-action="newFolder">📁 新建文件夹</div>
+    <div class="context-item" data-action="rename">✏️ 重命名</div>
+    <div class="context-item" data-action="addTag">🏷️ 添加标签</div>
+    <div class="context-divider"></div>
+    <div class="context-item danger" data-action="delete">🗑️ 删除</div>
+  </div>
+
+  <!-- 输入弹窗 -->
+  <div class="input-dialog" id="inputDialog">
+    <h3 id="dialogTitle">新建文件夹</h3>
+    <input type="text" id="dialogInput" placeholder="输入名称...">
+    <div class="btn-group">
+      <button class="btn btn-sm" id="dialogCancel">取消</button>
+      <button class="btn btn-primary btn-sm" id="dialogConfirm">确定</button>
+    </div>
+  </div>
 
   <!-- RIGHT: Main Content -->
   <main class="main" id="mainContent" aria-label="主要内容区域">
@@ -926,33 +1001,466 @@ function getHist(){ try{return JSON.parse(localStorage.getItem('rh')||'[]')}catc
 function saveHist(title,content,mode){
   const list=getHist();
   const hid=Date.now();
-  list.unshift({id:hid,title,mode,date:new Date().toLocaleString('zh-CN'),content});
+  list.unshift({id:hid,title,mode,date:new Date().toLocaleString('zh-CN'),content,tags:[]});
   if(list.length>50) list.length=50;
   try{localStorage.setItem('rh',JSON.stringify(list));}catch(e){
-    // Quota exceeded: trim older entries
     if (e.name === 'QuotaExceededError' || e.toString().includes('quota')) {
       status('存储空间不足，已自动清理旧记录','info');
       while(list.length>5){ list.pop(); try{localStorage.setItem('rh',JSON.stringify(list));break;}catch(e2){continue;} }
     }
   }
+  // 新报告默认加入 root
+  const folders = getFolders();
+  if (!folders.root.includes(hid)) {
+    folders.root.unshift(hid);
+    saveFolders(folders);
+  }
 }
+
+// ── 文件夹管理 ──
+function getFolders(){
+  try {
+    const f = JSON.parse(localStorage.getItem('rh_folders')||'');
+    if (f && typeof f === 'object' && f.root) return f;
+  } catch(e) {}
+  return { root: [] };
+}
+function saveFolders(f){ try{ localStorage.setItem('rh_folders', JSON.stringify(f)); }catch(e){} }
+
+function createFolder(name, parentId){
+  const folders = getFolders();
+  const id = 'folder_' + Date.now();
+  folders[id] = { id, name, children: [], collapsed: false };
+  if (parentId && folders[parentId]) {
+    folders[parentId].children.unshift(id);
+  } else {
+    folders.root.unshift(id);
+  }
+  saveFolders(folders);
+  return id;
+}
+
+function deleteFolder(folderId){
+  const folders = getFolders();
+  if (!folders[folderId]) return;
+
+  // 递归获取所有子文件夹和报告
+  function getAllChildren(id){
+    const result = [];
+    if (!folders[id]) return result;
+    for (const child of folders[id].children || []) {
+      if (child.startsWith('folder_')) {
+        result.push(...getAllChildren(child));
+      } else {
+        result.push(child);
+      }
+    }
+    return result;
+  }
+
+  // 将报告移到 root
+  const children = getAllChildren(folderId);
+  folders.root = [...children.filter(c => !c.startsWith('folder_')), ...folders.root];
+
+  // 从父级移除
+  for (const key of Object.keys(folders)) {
+    if (key === 'root' || key === folderId) continue;
+    if (folders[key].children) {
+      folders[key].children = folders[key].children.filter(c => c !== folderId);
+    }
+  }
+  if (folders.root.includes(folderId)) {
+    folders.root = folders.root.filter(c => c !== folderId);
+  }
+
+  delete folders[folderId];
+  saveFolders(folders);
+}
+
+function renameFolder(folderId, newName){
+  const folders = getFolders();
+  if (folders[folderId]) {
+    folders[folderId].name = newName;
+    saveFolders(folders);
+  }
+}
+
+function moveItem(itemId, targetId, isFolder = false){
+  const folders = getFolders();
+
+  // 从原位置移除
+  for (const key of Object.keys(folders)) {
+    if (folders[key] && folders[key].children) {
+      folders[key].children = folders[key].children.filter(c => c !== itemId);
+    }
+  }
+  if (folders.root.includes(itemId)) {
+    folders.root = folders.root.filter(c => c !== itemId);
+  }
+
+  // 添加到新位置
+  if (targetId === 'root') {
+    folders.root.unshift(itemId);
+  } else if (folders[targetId]) {
+    if (!folders[targetId].children) folders[targetId].children = [];
+    folders[targetId].children.unshift(itemId);
+  }
+
+  saveFolders(folders);
+}
+
+// ── 标签管理 ──
+function getTags(){ try{ return JSON.parse(localStorage.getItem('rh_tags')||'[]'); }catch(e){ return []; } }
+function saveTags(t){ try{ localStorage.setItem('rh_tags', JSON.stringify(t)); }catch(e){} }
+
+function addTagToReport(reportId, tag){
+  const list = getHist();
+  const item = list.find(h => h.id === reportId);
+  if (!item) return;
+  if (!item.tags) item.tags = [];
+  if (!item.tags.includes(tag)) {
+    item.tags.push(tag);
+    try{ localStorage.setItem('rh', JSON.stringify(list)); }catch(e){}
+  }
+  // 更新标签列表
+  const tags = getTags();
+  if (!tags.includes(tag)) {
+    tags.push(tag);
+    saveTags(tags);
+  }
+}
+
+function removeTagFromReport(reportId, tag){
+  const list = getHist();
+  const item = list.find(h => h.id === reportId);
+  if (!item || !item.tags) return;
+  item.tags = item.tags.filter(t => t !== tag);
+  try{ localStorage.setItem('rh', JSON.stringify(list)); }catch(e){}
+}
+
+// ── 渲染左侧栏 ──
+let expandedFolders = new Set();
+let activeTagFilter = null;
+
 function renderLeftList(){
-  const list=getHist();
-  const container=$('#leftList'), emptyEl=$('#leftEmpty');
+  const list = getHist();
+  const folders = getFolders();
+  const container = $('#leftList'), emptyEl = $('#leftEmpty');
   if(!container) return;
-  if(!list.length){ container.innerHTML=''; if(emptyEl) emptyEl.style.display=''; return; }
-  if(emptyEl) emptyEl.style.display='none';
-  container.innerHTML=list.map(h=>`
-    <div class="left-item${state.curReport&&state.curReport.id===h.id?' active':''}" data-id="${h.id}" onclick="viewR(${h.id})">
-      <span class="left-item-icon">📖</span>
-      <div class="left-item-text">
-        <div>${escHtml(h.title)}</div>
-        <div class="left-item-meta">${h.date} · ${h.content.length}字</div>
-      </div>
-      <button class="left-item-del" onclick="event.stopPropagation();delR(${h.id})" title="删除">✕</button>
-    </div>
-  `).join('');
+
+  // 统计每个文件夹的报告数量
+  function countReports(folderId){
+    let count = 0;
+    if (!folders[folderId]) return 0;
+    for (const child of folders[folderId].children || []) {
+      if (child.startsWith('folder_')) {
+        count += countReports(child);
+      } else {
+        count++;
+      }
+    }
+    return count;
+  }
+
+  // 递归渲染
+  function renderNode(nodeId, depth = 0){
+    let html = '';
+    const items = folders[nodeId] ? (folders[nodeId].children || []) : [];
+    const allReports = getHist();
+    const reportMap = new Map(allReports.map(r => [String(r.id), r]));
+
+    // 先渲染文件夹，再渲染报告
+    const folderItems = items.filter(id => id.startsWith('folder_'));
+    const reportItems = items.filter(id => !id.startsWith('folder_'));
+
+    // 文件夹
+    for (const fid of folderItems) {
+      const folder = folders[fid];
+      if (!folder) continue;
+      const isExpanded = expandedFolders.has(fid);
+      const reportCount = countReports(fid);
+      html += `
+        <div class="folder-item${isExpanded ? '' : ' collapsed'}" data-folder="${fid}" draggable="true" style="padding-left:${10 + depth * 12}px">
+          <span class="folder-icon">📁</span>
+          <span class="folder-name">${escHtml(folder.name)}</span>
+          <span class="folder-count">${reportCount}</span>
+        </div>
+        <div class="folder-children${isExpanded ? '' : ' collapsed'}" data-parent="${fid}">
+          ${isExpanded ? renderNode(fid, depth + 1) : ''}
+        </div>
+      `;
+    }
+
+    // 报告
+    for (const rid of reportItems) {
+      const report = reportMap.get(String(rid));
+      if (!report) continue;
+
+      // 标签筛选
+      if (activeTagFilter && (!report.tags || !report.tags.includes(activeTagFilter))) {
+        continue;
+      }
+
+      const tagsHtml = report.tags && report.tags.length ? `
+        <div class="report-tags">${report.tags.map(t => `<span class="report-tag" data-tag="${escHtml(t)}">${escHtml(t)}</span>`).join('')}</div>
+      ` : '';
+
+      html += `
+        <div class="report-item${state.curReport && state.curReport.id === report.id ? ' active' : ''}" data-id="${report.id}" draggable="true" style="padding-left:${10 + depth * 12}px">
+          <span class="report-icon">📖</span>
+          <div class="report-text">
+            <div>${escHtml(report.title)}</div>
+            <div class="report-meta">${report.date} · ${report.content.length}字</div>
+            ${tagsHtml}
+          </div>
+          <button class="report-del" data-del="${report.id}" title="删除">✕</button>
+        </div>
+      `;
+    }
+
+    return html;
+  }
+
+  // 渲染未分类报告
+  function renderUncategorized(){
+    const allReports = getHist();
+    const folders = getFolders();
+    const categorized = new Set();
+
+    // 收集所有已分类的报告
+    for (const key of Object.keys(folders)) {
+      if (key === 'root') continue;
+      if (folders[key].children) {
+        for (const child of folders[key].children) {
+          if (!child.startsWith('folder_')) categorized.add(String(child));
+        }
+      }
+    }
+    // root 中的报告也算已分类
+    for (const child of folders.root || []) {
+      if (!child.startsWith('folder_')) categorized.add(String(child));
+    }
+
+    const uncategorized = allReports.filter(r => !categorized.has(String(r.id)));
+    return uncategorized;
+  }
+
+  // 主渲染
+  if(!list.length){
+    container.innerHTML = '';
+    if(emptyEl) emptyEl.style.display = '';
+    return;
+  }
+  if(emptyEl) emptyEl.style.display = 'none';
+
+  let html = renderNode('root');
+
+  // 未分类报告
+  const uncategorized = renderUncategorized();
+  if (uncategorized.length) {
+    html += `<div class="folder-item" style="opacity:.6;pointer-events:none"><span class="folder-icon">📚</span><span class="folder-name">未分类</span><span class="folder-count">${uncategorized.length}</span></div>`;
+    for (const report of uncategorized) {
+      if (activeTagFilter && (!report.tags || !report.tags.includes(activeTagFilter))) continue;
+      const tagsHtml = report.tags && report.tags.length ? `
+        <div class="report-tags">${report.tags.map(t => `<span class="report-tag" data-tag="${escHtml(t)}">${escHtml(t)}</span>`).join('')}</div>
+      ` : '';
+      html += `
+        <div class="report-item${state.curReport && state.curReport.id === report.id ? ' active' : ''}" data-id="${report.id}" draggable="true">
+          <span class="report-icon">📖</span>
+          <div class="report-text">
+            <div>${escHtml(report.title)}</div>
+            <div class="report-meta">${report.date} · ${report.content.length}字</div>
+            ${tagsHtml}
+          </div>
+          <button class="report-del" data-del="${report.id}" title="删除">✕</button>
+        </div>
+      `;
+    }
+  }
+
+  container.innerHTML = html;
+
+  // 渲染标签筛选
+  renderTagFilter();
 }
+
+function renderTagFilter(){
+  const tags = getTags();
+  const container = $('#tagFilter');
+  if (!container || !tags.length) {
+    if (container) container.classList.remove('show');
+    return;
+  }
+
+  container.innerHTML = `
+    <span class="tag-filter-label">🏷️</span>
+    <span class="tag-filter-tag${!activeTagFilter ? ' active' : ''}" data-filter="">全部</span>
+    ${tags.map(t => `<span class="tag-filter-tag${activeTagFilter === t ? ' active' : ''}" data-filter="${escHtml(t)}">${escHtml(t)}</span>`).join('')}
+  `;
+  container.classList.add('show');
+}
+
+// ── 拖拽 ──
+let draggedItem = null;
+let draggedType = null;
+
+function setupDragDrop(){
+  const container = $('#leftList');
+  if (!container) return;
+
+  container.addEventListener('dragstart', e => {
+    const item = e.target.closest('.report-item, .folder-item');
+    if (!item) return;
+    draggedItem = item.dataset.id || item.dataset.folder;
+    draggedType = item.classList.contains('folder-item') ? 'folder' : 'report';
+    item.classList.add('dragging');
+    e.dataTransfer.effectAllowed = 'move';
+  });
+
+  container.addEventListener('dragend', e => {
+    const item = e.target.closest('.report-item, .folder-item');
+    if (item) item.classList.remove('dragging');
+    $$('.drag-over').forEach(el => el.classList.remove('drag-over'));
+    draggedItem = null;
+    draggedType = null;
+  });
+
+  container.addEventListener('dragover', e => {
+    e.preventDefault();
+    const item = e.target.closest('.report-item, .folder-item');
+    if (item && item.dataset.folder) {
+      item.classList.add('drag-over');
+    }
+  });
+
+  container.addEventListener('dragleave', e => {
+    const item = e.target.closest('.report-item, .folder-item');
+    if (item) item.classList.remove('drag-over');
+  });
+
+  container.addEventListener('drop', e => {
+    e.preventDefault();
+    const target = e.target.closest('.folder-item');
+    $$('.drag-over').forEach(el => el.classList.remove('drag-over'));
+
+    if (!draggedItem || !target) return;
+
+    const targetId = target.dataset.folder;
+    if (!targetId || targetId === draggedItem) return;
+
+    // 不能把文件夹拖到自己的子文件夹
+    if (draggedType === 'folder') {
+      const folders = getFolders();
+      let parent = targetId;
+      while (parent && folders[parent]) {
+        if (parent === draggedItem) return; // 目标是自己的子文件夹
+        // 向上找父级（简化处理，只检查直接父级）
+        break;
+      }
+    }
+
+    moveItem(draggedItem, targetId, draggedType === 'folder');
+    renderLeftList();
+  });
+}
+
+// ── 右键菜单 ──
+let contextTarget = null;
+let contextType = null;
+
+function showContextMenu(x, y, id, type){
+  const menu = $('#contextMenu');
+  contextTarget = id;
+  contextType = type;
+
+  // 根据类型显示/隐藏菜单项
+  const items = menu.querySelectorAll('.context-item');
+  items.forEach(item => {
+    const action = item.dataset.action;
+    if (type === 'report') {
+      item.style.display = ['addTag', 'delete'].includes(action) ? '' : 'none';
+    } else if (type === 'folder') {
+      item.style.display = ['rename', 'delete'].includes(action) ? '' : 'none';
+    } else {
+      item.style.display = action === 'newFolder' ? '' : 'none';
+    }
+  });
+
+  menu.style.left = x + 'px';
+  menu.style.top = y + 'px';
+  menu.classList.add('show');
+}
+
+function hideContextMenu(){
+  const menu = $('#contextMenu');
+  if (menu) menu.classList.remove('show');
+  contextTarget = null;
+  contextType = null;
+}
+
+function handleContextAction(action){
+  if (action === 'newFolder') {
+    showInputDialog('新建文件夹', '', name => {
+      if (name) {
+        createFolder(name);
+        renderLeftList();
+      }
+    });
+  } else if (action === 'rename' && contextTarget) {
+    const folders = getFolders();
+    const oldName = folders[contextTarget]?.name || '';
+    showInputDialog('重命名', oldName, name => {
+      if (name) {
+        renameFolder(contextTarget, name);
+        renderLeftList();
+      }
+    });
+  } else if (action === 'addTag' && contextTarget) {
+    const tag = prompt('输入标签名:');
+    if (tag && tag.trim()) {
+      addTagToReport(parseInt(contextTarget), tag.trim());
+      renderLeftList();
+    }
+  } else if (action === 'delete' && contextTarget) {
+    if (contextType === 'folder') {
+      if (confirm('确定删除此文件夹？其中的报告将移到未分类。')) {
+        deleteFolder(contextTarget);
+        renderLeftList();
+      }
+    } else {
+      if (confirm('确定删除此报告？')) {
+        delR(parseInt(contextTarget));
+      }
+    }
+  }
+  hideContextMenu();
+}
+
+// ── 输入弹窗 ──
+let dialogCallback = null;
+
+function showInputDialog(title, defaultValue, callback){
+  const dialog = $('#inputDialog');
+  const input = $('#dialogInput');
+  const titleEl = $('#dialogTitle');
+
+  if (titleEl) titleEl.textContent = title;
+  if (input) {
+    input.value = defaultValue || '';
+    input.placeholder = title === '新建文件夹' ? '输入文件夹名称...' : '输入名称...';
+  }
+  if (dialog) dialog.classList.add('show');
+  dialogCallback = callback;
+
+  setTimeout(() => { if (input) input.focus(); }, 100);
+}
+
+function hideInputDialog(){
+  const dialog = $('#inputDialog');
+  if (dialog) dialog.classList.remove('show');
+  dialogCallback = null;
+}
+
 function viewR(id){
   if(state.streaming){
     if(!confirm('正在生成报告，切换会丢失当前进度。确定要切换吗？')) return;
@@ -972,10 +1480,20 @@ function viewR(id){
   const main=$('#mainContent'); if(main) main.scrollTo({top:0,behavior:'smooth'});
 }
 function delR(id){
-  if(!confirm('确定删除此条记录？'))return;
   const list=getHist().filter(h=>h.id!==id);
   try{localStorage.setItem('rh',JSON.stringify(list));}catch(e){}
-  // If deleted item was currently viewed, reset
+  // 同时从文件夹结构中移除
+  const folders = getFolders();
+  for (const key of Object.keys(folders)) {
+    if (folders[key].children) {
+      folders[key].children = folders[key].children.filter(c => c !== id && c !== String(id));
+    }
+  }
+  if (folders.root) {
+    folders.root = folders.root.filter(c => c !== id && c !== String(id));
+  }
+  saveFolders(folders);
+
   if(state.curReport && state.curReport.id===id){
     state.curReport=null;
     $('#reportArea').classList.remove('visible');
@@ -1111,6 +1629,136 @@ document.addEventListener('DOMContentLoaded', ()=>{
   // New button
   const btnNew=$('#btnNew');
   if(btnNew) btnNew.addEventListener('click',showNew);
+
+  // New folder button
+  const btnNewFolder=$('#btnNewFolder');
+  if(btnNewFolder) btnNewFolder.addEventListener('click',()=>{
+    showInputDialog('新建文件夹', '', name => {
+      if (name) {
+        createFolder(name);
+        renderLeftList();
+      }
+    });
+  });
+
+  // 左侧栏点击事件委托
+  const leftList=$('#leftList');
+  if(leftList){
+    leftList.addEventListener('click', e => {
+      // 文件夹点击 - 展开/收起
+      const folderItem = e.target.closest('.folder-item[data-folder]');
+      if (folderItem && !e.target.closest('.report-item')) {
+        const fid = folderItem.dataset.folder;
+        if (expandedFolders.has(fid)) {
+          expandedFolders.delete(fid);
+        } else {
+          expandedFolders.add(fid);
+        }
+        renderLeftList();
+        return;
+      }
+
+      // 报告点击
+      const reportItem = e.target.closest('.report-item[data-id]');
+      if (reportItem && !e.target.closest('.report-del')) {
+        viewR(parseInt(reportItem.dataset.id));
+        return;
+      }
+
+      // 删除按钮
+      const delBtn = e.target.closest('.report-del');
+      if (delBtn) {
+        e.stopPropagation();
+        delR(parseInt(delBtn.dataset.del));
+        return;
+      }
+
+      // 标签点击 - 筛选
+      const tagEl = e.target.closest('.report-tag');
+      if (tagEl) {
+        e.stopPropagation();
+        activeTagFilter = tagEl.dataset.tag;
+        renderLeftList();
+        return;
+      }
+    });
+
+    // 右键菜单
+    leftList.addEventListener('contextmenu', e => {
+      e.preventDefault();
+      const reportItem = e.target.closest('.report-item[data-id]');
+      const folderItem = e.target.closest('.folder-item[data-folder]');
+
+      if (reportItem) {
+        showContextMenu(e.clientX, e.clientY, reportItem.dataset.id, 'report');
+      } else if (folderItem) {
+        showContextMenu(e.clientX, e.clientY, folderItem.dataset.folder, 'folder');
+      } else {
+        showContextMenu(e.clientX, e.clientY, null, 'empty');
+      }
+    });
+  }
+
+  // 标签筛选点击
+  const tagFilter=$('#tagFilter');
+  if(tagFilter){
+    tagFilter.addEventListener('click', e => {
+      const tagEl = e.target.closest('.tag-filter-tag');
+      if (tagEl) {
+        const filter = tagEl.dataset.filter;
+        activeTagFilter = filter || null;
+        renderLeftList();
+      }
+    });
+  }
+
+  // 右键菜单点击
+  const contextMenu=$('#contextMenu');
+  if(contextMenu){
+    contextMenu.addEventListener('click', e => {
+      const item = e.target.closest('.context-item');
+      if (item) {
+        handleContextAction(item.dataset.action);
+      }
+    });
+  }
+
+  // 点击其他地方关闭右键菜单
+  document.addEventListener('click', e => {
+    if (!e.target.closest('.context-menu')) {
+      hideContextMenu();
+    }
+  });
+
+  // 输入弹窗
+  const dialogConfirm=$('#dialogConfirm');
+  const dialogCancel=$('#dialogCancel');
+  const dialogInput=$('#dialogInput');
+
+  if(dialogConfirm){
+    dialogConfirm.addEventListener('click', () => {
+      const value = dialogInput ? dialogInput.value.trim() : '';
+      if (dialogCallback) dialogCallback(value);
+      hideInputDialog();
+    });
+  }
+  if(dialogCancel){
+    dialogCancel.addEventListener('click', hideInputDialog);
+  }
+  if(dialogInput){
+    dialogInput.addEventListener('keydown', e => {
+      if (e.key === 'Enter') {
+        const value = dialogInput.value.trim();
+        if (dialogCallback) dialogCallback(value);
+        hideInputDialog();
+      } else if (e.key === 'Escape') {
+        hideInputDialog();
+      }
+    });
+  }
+
+  // 初始化拖拽
+  setupDragDrop();
 
   // Render left list
   renderLeftList();
