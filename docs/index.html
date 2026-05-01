@@ -220,199 +220,213 @@ textarea{resize:vertical;min-height:80px;line-height:1.6}
 @media(max-width:480px){.topbar-tabs{gap:1px}.topbar-tab{font-size:.72rem;padding:4px 8px}}
 
 .hidden{display:none !important}
+
+/* SETTINGS MODAL */
+.modal-overlay{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.3);z-index:200;align-items:center;justify-content:center}
+.modal-overlay.show{display:flex}
+.modal{background:var(--bg3);border:1px solid var(--border);border-radius:12px;padding:24px;width:420px;max-width:90vw;max-height:80vh;overflow-y:auto;box-shadow:0 8px 32px rgba(0,0,0,.15)}
+.modal-title{font-size:1.1rem;font-weight:700;color:var(--text);margin-bottom:16px;display:flex;align-items:center;justify-content:space-between}
+.modal-close{background:none;border:none;font-size:1.3rem;cursor:pointer;color:var(--text2);padding:4px 8px;border-radius:4px}
+.modal-close:hover{background:var(--accent-s);color:var(--accent)}
+
+/* LEFT PANEL - HISTORY */
+.left-panel{width:260px;min-width:260px;background:var(--bg2);border-right:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden;transition:.3s}
+.left-panel.collapsed{width:0;min-width:0;overflow:hidden}
+.left-header{padding:12px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px}
+.left-header-title{font-size:.85rem;font-weight:600;color:var(--text);flex:1}
+.btn-new{font-size:.78rem;padding:5px 12px;background:var(--accent);color:#fff;border:none;border-radius:var(--r);cursor:pointer;font-weight:600;font-family:var(--ui);transition:.2s}
+.btn-new:hover{background:var(--accent-h)}
+.left-list{flex:1;overflow-y:auto;padding:8px}
+.left-item{display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:var(--r);cursor:pointer;transition:.15s;margin-bottom:2px;font-size:.82rem;color:var(--text2);border:1px solid transparent}
+.left-item:hover{background:var(--accent-s);color:var(--text);border-color:var(--border)}
+.left-item.active{background:var(--accent-s);color:var(--accent);border-color:var(--accent);font-weight:500}
+.left-item-icon{font-size:.9rem;flex-shrink:0}
+.left-item-text{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.left-item-meta{font-size:.68rem;color:var(--text3);margin-top:2px}
+.left-item-del{opacity:0;background:none;border:none;color:var(--err);cursor:pointer;font-size:.75rem;padding:2px 4px;border-radius:3px;flex-shrink:0}
+.left-item:hover .left-item-del{opacity:1}
+.left-empty{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;color:var(--text3);padding:20px;text-align:center}
+.left-empty-icon{font-size:2rem;margin-bottom:8px;opacity:.4}
+.left-empty-text{font-size:.8rem}
+
+/* INPUT AREA (shown in right panel when creating new) */
+.input-area{max-width:680px;margin:0 auto;padding:24px}
+.input-section{background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);padding:16px;margin-bottom:16px}
+.input-section-title{font-size:.82rem;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:.04em;margin-bottom:12px}
+
+/* RESPONSIVE */
+@media(max-width:768px){
+.left-panel{width:100%;min-width:100%;max-height:40vh;border-right:none;border-bottom:1px solid var(--border)}
+.left-panel.collapsed{max-height:0}
+.app-layout{flex-direction:column}
+.input-area{padding:14px}
+.modal{width:95vw;padding:16px}
+}
+
 </style>
 </head>
 <body>
 
 <header class="topbar">
   <div class="topbar-logo">📖 <span>读我</span></div>
-  <nav class="topbar-tabs">
-    <button class="topbar-tab active" data-tab="generate">代读</button>
-    <button class="topbar-tab" data-tab="history">历史</button>
-    <button class="topbar-tab" data-tab="about">关于</button>
-  </nav>
   <div class="topbar-spacer"></div>
   <button class="sidebar-toggle" id="sidebarToggle" title="切换侧栏">☰</button>
+  <button class="sidebar-toggle" id="settingsBtn" title="设置">⚙️</button>
 </header>
 
 <div class="app-layout">
-  <aside class="sidebar" id="sidebar">
-    <div class="card">
-      <div class="card-title">⚙️ 模型配置</div>
-      <div class="form-group">
-        <label for="provider">服务商</label>
-        <select id="provider">
-          <option value="deepseek" selected>DeepSeek V4 Flash（推荐）</option>
-          <option value="deepseek_pro">DeepSeek V4 Pro</option>
-          <option value="openai">OpenAI GPT-4o</option>
-          <option value="moonshot">Moonshot (Kimi)</option>
-          <option value="qwen">通义千问</option>
-          <option value="custom">自定义</option>
-        </select>
-      </div>
-      <div class="form-group">
-        <label for="apiKey">API Key</label>
-        <div class="pw-wrap">
-          <input type="password" id="apiKey" placeholder="sk-...">
-          <button type="button" class="pw-toggle" id="pwToggle" title="显示/隐藏">👁</button>
-        </div>
-      </div>
-      <div class="form-group">
-        <label for="baseUrl">Base URL</label>
-        <input type="url" id="baseUrl" placeholder="https://api.deepseek.com">
-      </div>
-      <div class="form-group">
-        <label for="modelName">模型名称</label>
-        <input type="text" id="modelName" placeholder="deepseek-v4-flash">
-      </div>
-      <button class="btn btn-primary btn-sm" id="saveConfig" style="width:100%;margin-top:8px">保存配置</button>
-    </div>
 
-    <div class="card">
-      <div class="card-title">📥 输入方式</div>
-      <div class="radio-cards">
-        <label class="radio-card active" data-mode="search">
-          <input type="radio" name="inputMode" value="search" checked>
-          <span class="radio-card-icon">🔍</span>
-          <div><div class="radio-card-label">书名搜索</div><div class="radio-card-desc">输入书名即可</div></div>
-        </label>
-        <label class="radio-card" data-mode="upload">
-          <input type="radio" name="inputMode" value="upload">
-          <span class="radio-card-icon">📁</span>
-          <div><div class="radio-card-label">文件上传</div><div class="radio-card-desc">PDF / EPUB / TXT</div></div>
-        </label>
-        <label class="radio-card" data-mode="paste">
-          <input type="radio" name="inputMode" value="paste">
-          <span class="radio-card-icon">📋</span>
-          <div><div class="radio-card-label">粘贴文本</div><div class="radio-card-desc">直接粘贴内容</div></div>
-        </label>
-      </div>
+  <!-- LEFT PANEL: History -->
+  <aside class="left-panel" id="leftPanel">
+    <div class="left-header">
+      <span class="left-header-title">📚 已读</span>
+      <button class="btn-new" id="btnNew">+ 新建</button>
     </div>
-
-    <div class="card" id="searchInputCard">
-      <div class="card-title">📖 书名</div>
-      <div class="form-group">
-        <input type="text" id="bookTitle" placeholder="例如：思考，快与慢">
-      </div>
+    <div class="left-list" id="leftList"></div>
+    <div class="left-empty" id="leftEmpty">
+      <div class="left-empty-icon">📚</div>
+      <div class="left-empty-text">还没有报告<br>点击「新建」开始</div>
     </div>
-
-    <div class="card hidden" id="uploadInputCard">
-      <div class="card-title">📁 上传文件</div>
-      <div class="dropzone" id="dropzone">
-        <input type="file" id="fileInput" accept=".pdf,.epub,.txt,.md">
-        <div class="dropzone-icon">⬆️</div>
-        <div class="dropzone-text">拖放文件到此处，或 <strong>点击选择</strong></div>
-        <div class="dropzone-hint">支持 PDF、EPUB、TXT、MD</div>
-        <div class="dropzone-filename hidden" id="dropzoneFilename"></div>
-      </div>
-    </div>
-
-    <div class="card hidden" id="pasteInputCard">
-      <div class="card-title">📋 粘贴文本</div>
-      <div class="form-group">
-        <textarea id="pasteText" rows="6" placeholder="在此粘贴书籍内容..."></textarea>
-      </div>
-    </div>
-
-    <div class="card">
-      <div class="card-title">📊 详细程度</div>
-      <div class="detail-cards">
-        <label class="detail-card active" data-level="standard">
-          <input type="radio" name="detailLevel" value="standard" checked>
-          <div class="detail-card-title">标准版</div>
-          <div class="detail-card-desc">5000–10000 字</div>
-        </label>
-        <label class="detail-card" data-level="enhanced">
-          <input type="radio" name="detailLevel" value="enhanced">
-          <div class="detail-card-title">案例加厚版</div>
-          <div class="detail-card-desc">8000–12000 字</div>
-        </label>
-      </div>
-    </div>
-
-    <button class="btn btn-primary generate-btn" id="generateBtn">🚀 开始代读</button>
   </aside>
 
-  <main class="main">
-    <div class="tab-panel active" data-panel="generate">
-      <div class="status-area" id="statusArea"></div>
-      <div class="empty-state" id="emptyState">
-        <div class="empty-state-icon">📖</div>
-        <div class="empty-state-text">开始你的 AI 代读之旅</div>
-        <div class="empty-state-hint">在左侧配置模型并输入书名，即可生成读书报告</div>
-      </div>
-      <div class="report-area" id="reportArea">
-        <div class="report-header">
-          <div class="report-title" id="reportTitle">—</div>
-          <div class="report-actions">
-            <button class="btn btn-sm" id="copyReportBtn">📋 复制</button>
-            <button class="btn btn-sm" id="downloadReportBtn">💾 下载</button>
-          </div>
-        </div>
-        <div class="progress-bar" id="progressBar">
-          <div class="progress-bar-fill" id="progressBarFill"></div>
-        </div>
-        <div class="md" id="reportBody"></div>
-        <div class="followup-section" id="followupSection" style="display:none">
-          <div class="followup-title">💬 追问</div>
-          <div class="followup-input-row">
-            <input type="text" id="followupInput" placeholder="对报告内容有疑问？在这里追问...">
-            <button class="btn btn-primary" id="followupBtn">发送</button>
-          </div>
-          <div id="followupResponses"></div>
-        </div>
-      </div>
+  <!-- RIGHT: Main Content -->
+  <main class="main" id="mainContent">
+    <div class="status-area" id="statusArea"></div>
+
+    <!-- Empty state -->
+    <div class="empty-state" id="emptyState">
+      <div class="empty-state-icon">📖</div>
+      <div class="empty-state-text">开始你的 AI 代读之旅</div>
+      <div class="empty-state-hint">点击上方「新建」输入书名，或从左侧选择已有报告</div>
     </div>
 
-    <div class="tab-panel" data-panel="history">
-      <div class="history-panel">
-        <div class="history-search">
-          <span class="history-search-icon">🔍</span>
-          <input type="search" id="historySearch" placeholder="搜索历史报告...">
-        </div>
-        <div class="history-list" id="historyList"></div>
-        <div class="history-empty" id="historyEmpty">
-          <div class="history-empty-icon">📚</div>
-          <div class="history-empty-text">暂无历史报告</div>
-          <div class="history-empty-hint">生成的报告会自动保存在这里</div>
+    <!-- Input area (shown when creating new) -->
+    <div class="input-area hidden" id="inputArea">
+      <div class="input-section">
+        <div class="input-section-title">📥 输入方式</div>
+        <div class="radio-cards">
+          <label class="radio-card active" data-mode="search">
+            <input type="radio" name="inputMode" value="search" checked>
+            <span class="radio-card-icon">🔍</span>
+            <div><div class="radio-card-label">书名搜索</div><div class="radio-card-desc">输入书名即可</div></div>
+          </label>
+          <label class="radio-card" data-mode="upload">
+            <input type="radio" name="inputMode" value="upload">
+            <span class="radio-card-icon">📁</span>
+            <div><div class="radio-card-label">文件上传</div><div class="radio-card-desc">PDF / EPUB / TXT</div></div>
+          </label>
+          <label class="radio-card" data-mode="paste">
+            <input type="radio" name="inputMode" value="paste">
+            <span class="radio-card-icon">📋</span>
+            <div><div class="radio-card-label">粘贴文本</div><div class="radio-card-desc">直接粘贴内容</div></div>
+          </label>
         </div>
       </div>
+
+      <div class="input-section" id="searchInputCard">
+        <div class="input-section-title">📖 书名</div>
+        <div class="form-group">
+          <input type="text" id="bookTitle" placeholder="例如：思考，快与慢">
+        </div>
+      </div>
+
+      <div class="input-section hidden" id="uploadInputCard">
+        <div class="input-section-title">📁 上传文件</div>
+        <div class="dropzone" id="dropzone">
+          <input type="file" id="fileInput" accept=".pdf,.epub,.txt,.md">
+          <div class="dropzone-icon">⬆️</div>
+          <div class="dropzone-text">拖放文件到此处，或 <strong>点击选择</strong></div>
+          <div class="dropzone-hint">支持 PDF、EPUB、TXT、MD</div>
+          <div class="dropzone-filename hidden" id="dropzoneFilename"></div>
+        </div>
+      </div>
+
+      <div class="input-section hidden" id="pasteInputCard">
+        <div class="input-section-title">📋 粘贴文本</div>
+        <div class="form-group">
+          <textarea id="pasteText" rows="6" placeholder="在此粘贴书籍内容..."></textarea>
+        </div>
+      </div>
+
+      <div class="input-section">
+        <div class="input-section-title">📊 详细程度</div>
+        <div class="detail-cards">
+          <label class="detail-card active" data-level="standard">
+            <input type="radio" name="detailLevel" value="standard" checked>
+            <div class="detail-card-title">标准版</div>
+            <div class="detail-card-desc">5000–10000 字</div>
+          </label>
+          <label class="detail-card" data-level="enhanced">
+            <input type="radio" name="detailLevel" value="enhanced">
+            <div class="detail-card-title">案例加厚版</div>
+            <div class="detail-card-desc">8000–12000 字</div>
+          </label>
+        </div>
+      </div>
+
+      <button class="btn btn-primary generate-btn" id="generateBtn">🚀 开始代读</button>
     </div>
 
-    <div class="tab-panel" data-panel="about">
-      <div class="about-panel">
-        <h2>📖 关于「读我」</h2>
-        <p>「读我」是一款纯前端 AI 代读系统。所有数据存在你的浏览器里，不经过任何服务器。输入书名或上传电子书，AI 为你生成一份结构化的深度读书报告。</p>
-        <h3>🔒 隐私说明</h3>
-        <ul>
-          <li>你的 API Key <strong>只存在浏览器本地</strong>（localStorage），不会上传到任何地方</li>
-          <li>LLM 调用直接从浏览器发到你选择的模型服务商</li>
-          <li>报告数据存在浏览器 localStorage，清除浏览器数据会丢失</li>
-          <li>建议定期使用「下载」功能备份报告</li>
-        </ul>
-        <h3>📋 报告结构</h3>
-        <ul>
-          <li><strong>🎯 这本书到底在解决什么问题？</strong> — 核心问题 + 作者起心动念</li>
-          <li><strong>🔗 核心主张与论证链条</strong> — 3-5 个主张，每个配书中案例</li>
-          <li><strong>💡 最颠覆直觉的 3 个观点</strong> — 反常识观点 + 关键实验</li>
-          <li><strong>📖 如果只记住一个故事</strong> — 全书最精彩故事的详细转述</li>
-          <li><strong>🤔 我可能会质疑的地方</strong> — 逻辑漏洞与批判分析</li>
-          <li><strong>🛠️ 与我生活的接口</strong> — 普通人能立刻用的行动建议</li>
-        </ul>
-        <h3>🤖 支持的模型</h3>
-        <table class="about-table">
-          <thead><tr><th>服务商</th><th>推荐模型</th><th>说明</th></tr></thead>
-          <tbody>
-            <tr><td>DeepSeek</td><td>deepseek-v4-flash</td><td>便宜好用 <span class="about-badge">推荐</span></td></tr>
-            <tr><td>OpenAI</td><td>gpt-4o</td><td>效果最好</td></tr>
-            <tr><td>Moonshot</td><td>moonshot-v1-128k</td><td>Kimi，中文好</td></tr>
-            <tr><td>通义千问</td><td>qwen-plus</td><td>阿里云</td></tr>
-            <tr><td>自定义</td><td>—</td><td>兼容 OpenAI API 格式的服务</td></tr>
-          </tbody>
-        </table>
+    <!-- Report area -->
+    <div class="report-area" id="reportArea">
+      <div class="report-header">
+        <div class="report-title" id="reportTitle">—</div>
+        <div class="report-actions">
+          <button class="btn btn-sm" id="copyReportBtn">📋 复制</button>
+          <button class="btn btn-sm" id="downloadReportBtn">💾 下载</button>
+        </div>
+      </div>
+      <div class="progress-bar" id="progressBar">
+        <div class="progress-bar-fill" id="progressBarFill"></div>
+      </div>
+      <div class="md" id="reportBody"></div>
+      <div class="followup-section" id="followupSection" style="display:none">
+        <div class="followup-title">💬 追问</div>
+        <div class="followup-input-row">
+          <input type="text" id="followupInput" placeholder="对报告内容有疑问？在这里追问...">
+          <button class="btn btn-primary" id="followupBtn">发送</button>
+        </div>
+        <div id="followupResponses"></div>
       </div>
     </div>
   </main>
+</div>
+
+<!-- SETTINGS MODAL -->
+<div class="modal-overlay" id="settingsModal">
+  <div class="modal">
+    <div class="modal-title">
+      <span>⚙️ 模型配置</span>
+      <button class="modal-close" id="modalClose">✕</button>
+    </div>
+    <div class="form-group">
+      <label for="provider">服务商</label>
+      <select id="provider">
+        <option value="deepseek" selected>DeepSeek V4 Flash（推荐）</option>
+        <option value="deepseek_pro">DeepSeek V4 Pro</option>
+        <option value="openai">OpenAI GPT-4o</option>
+        <option value="moonshot">Moonshot (Kimi)</option>
+        <option value="qwen">通义千问</option>
+        <option value="custom">自定义</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label for="apiKey">API Key</label>
+      <div class="pw-wrap">
+        <input type="password" id="apiKey" placeholder="sk-...">
+        <button type="button" class="pw-toggle" id="pwToggle" title="显示/隐藏">👁</button>
+      </div>
+    </div>
+    <div class="form-group">
+      <label for="baseUrl">Base URL</label>
+      <input type="url" id="baseUrl" placeholder="https://api.deepseek.com">
+    </div>
+    <div class="form-group">
+      <label for="modelName">模型名称</label>
+      <input type="text" id="modelName" placeholder="deepseek-v4-flash">
+    </div>
+    <button class="btn btn-primary btn-sm" id="saveConfig" style="width:100%;margin-top:8px">保存配置</button>
+  </div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/marked@12.0.0/marked.min.js"></script>
@@ -461,12 +475,12 @@ function preset() {
 }
 
 // ── TABS ──
-function sw(tab) {
-  $$('.topbar-tab').forEach(b=>b.classList.toggle('active', b.dataset.tab===tab));
-  $$('.tab-panel').forEach(p=>p.classList.remove('active'));
-  const panel = $(`.tab-panel[data-panel="${tab}"]`);
-  if(panel) panel.classList.add('active');
-  if(tab==='history') renderHist();
+function showNew(){
+  $('#inputArea').classList.remove('hidden');
+  $('#emptyState').style.display='none';
+  $('#reportArea').classList.remove('visible');
+  state.curReport=null;
+  renderLeftList();
 }
 
 // ── MODE / DETAIL ──
@@ -628,8 +642,9 @@ async function generate() {
   const sysP = SYS_PROMPT + (state.detail==='enhanced' ? ENH_SUFFIX : '');
   const userMsg = content ? `请代读以下书籍内容。书名：《${title}》\n\n---\n\n${content}` : `请代读《${title}》这本书。请根据你对这本书的了解来生成代读报告。`;
 
-  $('#reportArea').classList.add('visible');
+  $('#inputArea').classList.add('hidden');
   $('#emptyState').style.display='none';
+  $('#reportArea').classList.add('visible');
   $('#reportBody').innerHTML='';
   $('#reportBody').classList.add('streaming-cursor');
   $('#followupSection').style.display='none';
@@ -689,7 +704,7 @@ async function generate() {
     $('#progressBarFill').style.width='100%';
     $('#reportTitle').textContent='📖 '+title;
     status('生成完成，共 '+full.length+' 字','ok');
-    state.curReport={title,content:full};
+    state.curReport={title,content:full,id:Date.now()};
     saveHist(title, full, state.detail==='enhanced'?'案例加厚版':'标准版');
     $('#followupSection').style.display='';
   } catch(e) {
@@ -752,45 +767,40 @@ async function askFU() {
 function getHist(){ try{return JSON.parse(localStorage.getItem('rh')||'[]')}catch(e){return[]} }
 function saveHist(title,content,mode){
   const list=getHist();
-  list.unshift({id:Date.now(),title,mode,date:new Date().toLocaleString('zh-CN'),content});
+  const hid=Date.now();
+  list.unshift({id:hid,title,mode,date:new Date().toLocaleString('zh-CN'),content});
   if(list.length>50) list.length=50;
   try{localStorage.setItem('rh',JSON.stringify(list));}catch(e){status('存储空间不足','error');}
 }
-function renderHist(){
-  const kw=($('#historySearch')?$('#historySearch').value:'').trim().toLowerCase();
-  let list=getHist();
-  if(kw) list=list.filter(h=>h.title.toLowerCase().includes(kw));
-  const container=$('#historyList'), emptyEl=$('#historyEmpty');
+function renderLeftList(){
+  const list=getHist();
+  const container=$('#leftList'), emptyEl=$('#leftEmpty');
   if(!container) return;
   if(!list.length){ container.innerHTML=''; if(emptyEl) emptyEl.style.display=''; return; }
   if(emptyEl) emptyEl.style.display='none';
   container.innerHTML=list.map(h=>`
-    <div class="history-item" onclick="viewR(${h.id})">
-      <div class="history-item-body">
-        <div class="history-item-title">📖 ${escHtml(h.title)}</div>
-        <div class="history-item-meta">
-          <span>📅 ${h.date}</span>
-          <span>📋 ${h.mode||'标准版'}</span>
-          <span>📝 ${h.content.length} 字</span>
-        </div>
+    <div class="left-item${state.curReport&&state.curReport.id===h.id?' active':''}" data-id="${h.id}" onclick="viewR(${h.id})">
+      <span class="left-item-icon">📖</span>
+      <div class="left-item-text">
+        <div>${escHtml(h.title)}</div>
+        <div class="left-item-meta">${h.date} · ${h.content.length}字</div>
       </div>
-      <div class="history-item-delete">
-        <button class="btn btn-icon btn-danger" onclick="event.stopPropagation();delR(${h.id})" title="删除">🗑️</button>
-      </div>
+      <button class="left-item-del" onclick="event.stopPropagation();delR(${h.id})" title="删除">✕</button>
     </div>
   `).join('');
 }
 function viewR(id){
   const item=getHist().find(h=>h.id===id);
   if(!item) return;
-  $('#reportArea').classList.add('visible');
+  $('#inputArea').classList.add('hidden');
   $('#emptyState').style.display='none';
+  $('#reportArea').classList.add('visible');
   $('#reportTitle').textContent='📖 '+item.title;
   $('#reportBody').innerHTML=md(item.content);
-  state.curReport={title:item.title,content:item.content};
+  state.curReport={title:item.title,content:item.content,id:item.id};
   $('#followupSection').style.display='';
   $('#followupResponses').innerHTML='';
-  sw('generate');
+  renderLeftList();
   window.scrollTo({top:0,behavior:'smooth'});
 }
 function delR(id){
@@ -889,9 +899,6 @@ document.addEventListener('DOMContentLoaded', ()=>{
   const dlBtn=$('#downloadReportBtn');
   if(dlBtn) dlBtn.addEventListener('click',dlReport);
 
-  // Tabs
-  $$('.topbar-tab').forEach(b=>b.addEventListener('click',()=>sw(b.dataset.tab)));
-
   // Input mode cards
   $$('.radio-card[data-mode]').forEach(card=>card.addEventListener('click',()=>setMode(card.dataset.mode,card)));
 
@@ -900,14 +907,10 @@ document.addEventListener('DOMContentLoaded', ()=>{
 
   // Sidebar toggle
   const sToggle=$('#sidebarToggle');
-  if(sToggle) sToggle.addEventListener('click',()=>$('#sidebar').classList.toggle('collapsed'));
-
-  // History search
-  const hSearch=$('#historySearch');
-  if(hSearch) hSearch.addEventListener('input',renderHist);
+  if(sToggle) sToggle.addEventListener('click',()=>$('#leftPanel').classList.toggle('collapsed'));
 
   // Default tab
-  sw('generate');
+
 });
 </script>
 </body>
