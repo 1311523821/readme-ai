@@ -587,10 +587,11 @@ function showNew(){
     if(!confirm('正在生成报告，确定要取消吗？')) return;
     cancelGen();
   }
-  $('#inputArea').classList.remove('hidden');
-  $('#emptyState').style.display='none';
-  $('#reportArea').classList.remove('visible');
-  $('#cancelBtn').classList.add('hidden');
+  const inputArea=$('#inputArea'), emptyState=$('#emptyState'), reportArea=$('#reportArea'), cancelBtn=$('#cancelBtn');
+  if(inputArea) inputArea.classList.remove('hidden');
+  if(emptyState) emptyState.style.display='none';
+  if(reportArea) reportArea.classList.remove('visible');
+  if(cancelBtn) cancelBtn.classList.add('hidden');
   state.curReport=null;
   // Reset to search mode
   setMode('search', $$('[data-mode="search"]')[0]);
@@ -1166,7 +1167,8 @@ function renderLeftList(){
   // 递归渲染
   function renderNode(nodeId, depth = 0){
     let html = '';
-    const items = folders[nodeId] ? (folders[nodeId].children || []) : [];
+    // root 是数组，文件夹是对象 with children
+    const items = folders[nodeId] ? (Array.isArray(folders[nodeId]) ? folders[nodeId] : (folders[nodeId].children || [])) : [];
 
     // 先渲染文件夹，再渲染报告
     const folderItems = items.filter(id => id.startsWith('folder_'));
@@ -1626,7 +1628,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
   if(modalClose) modalClose.addEventListener('click',()=>$('#settingsModal').classList.remove('show'));
   const modal=$('#settingsModal');
   if(modal) modal.addEventListener('click',e=>{if(e.target===modal) modal.classList.remove('show');});
-  document.addEventListener('keydown',e=>{if(e.key==='Escape') $('#settingsModal').classList.remove('show');});
+  document.addEventListener('keydown',e=>{if(e.key==='Escape'){const m=$('#settingsModal');if(m)m.classList.remove('show');}});
 
   // New button
   const btnNew=$('#btnNew');
