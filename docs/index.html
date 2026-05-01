@@ -137,7 +137,8 @@
                     <label>🔌 服务商</label>
                     <select id="provider" onchange="preset()">
                         <option value="custom">自定义</option>
-                        <option value="deepseek" selected>DeepSeek（推荐）</option>
+                        <option value="deepseek" selected>DeepSeek V4 Flash（推荐）</option>
+                        <option value="deepseek_pro">DeepSeek V4 Pro</option>
                         <option value="openai">OpenAI</option>
                         <option value="moonshot">Moonshot (Kimi)</option>
                         <option value="qwen">通义千问</option>
@@ -240,7 +241,8 @@ const $$ = s => document.querySelectorAll(s);
 
 // ── Presets ──────────────────────────────────────
 const PRESETS = {
-    deepseek: { url:'https://api.deepseek.com/v1', model:'deepseek-chat' },
+    deepseek: { url:'https://api.deepseek.com', model:'deepseek-v4-flash' },
+    deepseek_pro: { url:'https://api.deepseek.com', model:'deepseek-v4-pro' },
     openai:   { url:'https://api.openai.com/v1', model:'gpt-4o' },
     moonshot: { url:'https://api.moonshot.cn/v1', model:'moonshot-v1-128k' },
     qwen:     { url:'https://dashscope.aliyuncs.com/compatible-mode/v1', model:'qwen-plus' },

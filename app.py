@@ -74,8 +74,9 @@ if "streaming" not in st.session_state:
 # ── 侧边栏 ──────────────────────────────────────────────
 PRESETS = {
     "自定义": {"base_url": "", "model": ""},
+    "DeepSeek V4 Flash（推荐）": {"base_url": "https://api.deepseek.com", "model": "deepseek-v4-flash"},
+    "DeepSeek V4 Pro": {"base_url": "https://api.deepseek.com", "model": "deepseek-v4-pro"},
     "OpenAI GPT-4o": {"base_url": "https://api.openai.com/v1", "model": "gpt-4o"},
-    "DeepSeek V3": {"base_url": "https://api.deepseek.com/v1", "model": "deepseek-chat"},
     "Moonshot (Kimi)": {"base_url": "https://api.moonshot.cn/v1", "model": "moonshot-v1-128k"},
     "通义千问": {"base_url": "https://dashscope.aliyuncs.com/compatible-mode/v1", "model": "qwen-plus"},
     "Claude (Anthropic)": {"base_url": "https://api.anthropic.com/v1", "model": "claude-3-5-sonnet-20241022"},
