@@ -699,7 +699,7 @@ async function parseFile(file) {
 }
 
 // ── PROMPTS ──
-const SYS_PROMPT=`你将扮演一位私人学者，替我仔细阅读《{书名}》，然后按照下面的结构为我呈现内容。
+const SYS_PROMPT=`你将扮演一位私人学者，替我仔细阅读用户提供的书籍内容，然后按照下面的结构为我呈现内容。
 
 **重要原则**：
 - 不要只给结论，必须保留书中最有说服力的具体案例、实验、故事作为证据。
@@ -707,7 +707,7 @@ const SYS_PROMPT=`你将扮演一位私人学者，替我仔细阅读《{书名}
 - 如果你不确定某个细节，请标注"此处信息不确定"，不要编造。
 - 使用中文回答。
 
-请严格按照以下六部分展开：
+请严格按照以下六部分展开，每部分用二级标题（##）标记：
 
 ## 一、这本书到底在解决什么问题？
 - 用一句话概括核心问题。
@@ -718,7 +718,7 @@ const SYS_PROMPT=`你将扮演一位私人学者，替我仔细阅读《{书名}
 - 每个主张之下，必须配上书中至少一个具体的例子/实验/人物故事来详细说明。
 - 如果书中某个主张没有提供实证，请标注"作者在此处未给出实例"，不要自己编造。
 
-## 三、最颠覆或最反直觉的 3 个点
+## 三、最颠覆直觉的 3 个点
 - 摘出书中与大众常识截然相反的观点。
 - 每个点都要附上它用来颠覆读者的那个关键实验或真实案例的详细描述。
 
@@ -759,8 +759,8 @@ async function generate() {
 
   const sysP = (function(){
     const custom=$('#sysPrompt').value.trim();
-    const tmpl = custom || SYS_PROMPT;
-    return tmpl.replace(/\{书名\}/g, title) + (state.detail==='enhanced' ? ENH_SUFFIX : '');
+    if(custom) return custom.replace(/\{书名\}/g, title) + (state.detail==='enhanced' ? ENH_SUFFIX : '');
+    return SYS_PROMPT + (state.detail==='enhanced' ? ENH_SUFFIX : '');
   })();
   const userMsg = content ? `请代读以下书籍内容。书名：《${title}》\n\n---\n\n${content}` : `请代读《${title}》这本书。请根据你对这本书的了解来生成代读报告。`;
 
