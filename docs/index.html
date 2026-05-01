@@ -1088,22 +1088,25 @@ function renameFolder(folderId, newName){
 
 function moveItem(itemId, targetId, isFolder = false){
   const folders = getFolders();
+  const itemIdStr = String(itemId); // 统一转字符串比较
 
-  // 从原位置移除
-  for (const key of Object.keys(folders)) {
-    if (folders[key] && folders[key].children) {
-      folders[key].children = folders[key].children.filter(c => c !== itemId);
-    }
+  // 从原位置移除（包括 root 数组和各文件夹的 children）
+  if (Array.isArray(folders.root)) {
+    folders.root = folders.root.filter(c => String(c) !== itemIdStr);
   }
-  if (folders.root.includes(itemId)) {
-    folders.root = folders.root.filter(c => c !== itemId);
+  for (const key of Object.keys(folders)) {
+    if (key === 'root') continue;
+    if (folders[key] && Array.isArray(folders[key].children)) {
+      folders[key].children = folders[key].children.filter(c => String(c) !== itemIdStr);
+    }
   }
 
   // 添加到新位置
   if (targetId === 'root') {
+    if (!Array.isArray(folders.root)) folders.root = [];
     folders.root.unshift(itemId);
   } else if (folders[targetId]) {
-    if (!folders[targetId].children) folders[targetId].children = [];
+    if (!Array.isArray(folders[targetId].children)) folders[targetId].children = [];
     folders[targetId].children.unshift(itemId);
   }
 
