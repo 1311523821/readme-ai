@@ -1,20 +1,20 @@
 """
 「读我」桌面版入口
-使用 pywebview 创建原生窗口
+使用 pywebview 加载本地 HTML 文件
 """
-import threading
-import time
 import sys
 import os
-import socket
 
-def find_free_port():
-    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-        s.bind(('', 0))
-        return s.getsockname()[1]
 
-def run_streamlit(port):
-    os.system(f'streamlit run app.py --server.port={port} --server.headless=true --browser.gatherUsageStats=false')
+def get_html_path():
+    """获取 docs/index.html 的绝对路径"""
+    base = os.path.dirname(os.path.abspath(__file__))
+    path = os.path.join(base, 'docs', 'index.html')
+    if not os.path.exists(path):
+        print(f"错误: 找不到 {path}")
+        sys.exit(1)
+    return path
+
 
 def main():
     try:
@@ -23,32 +23,19 @@ def main():
         print("请先安装依赖: pip install pywebview")
         sys.exit(1)
 
-    port = find_free_port()
-    url = f"http://localhost:{port}"
+    html_path = get_html_path()
 
-    # 在后台线程启动 Streamlit
-    t = threading.Thread(target=run_streamlit, args=(port,), daemon=True)
-    t.start()
-
-    # 等待 Streamlit 启动
-    for _ in range(30):
-        try:
-            import urllib.request
-            urllib.request.urlopen(url, timeout=1)
-            break
-        except Exception:
-            time.sleep(0.5)
-
-    # 创建原生窗口
-    webview.create_window(
-        "📖 读我 — AI 代读系统",
-        url,
+    window = webview.create_window(
+        '📖 读我 — AI 代读系统',
+        html_path,
         width=1200,
         height=800,
-        resizable=True,
         min_size=(800, 600),
+        resizable=True,
+        text_select=True,
     )
-    webview.start()
+    webview.start(debug='--debug' in sys.argv)
 
-if __name__ == "__main__":
+
+if __name__ == '__main__':
     main()
