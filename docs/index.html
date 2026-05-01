@@ -1174,8 +1174,8 @@ function renderLeftList(){
     const items = folders[nodeId] ? (Array.isArray(folders[nodeId]) ? folders[nodeId] : (folders[nodeId].children || [])) : [];
 
     // 先渲染文件夹，再渲染报告
-    const folderItems = items.filter(id => id.startsWith('folder_'));
-    const reportItems = items.filter(id => !id.startsWith('folder_'));
+    const folderItems = items.filter(id => String(id).startsWith('folder_'));
+    const reportItems = items.filter(id => !String(id).startsWith('folder_'));
 
     // 文件夹
     for (const fid of folderItems) {
