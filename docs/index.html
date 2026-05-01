@@ -1145,6 +1145,7 @@ let activeTagFilter = null;
 function renderLeftList(){
   const list = getHist();
   const folders = getFolders();
+  const reportMap = new Map(list.map(r => [String(r.id), r])); // 创建一次，避免递归中重复创建
   const container = $('#leftList'), emptyEl = $('#leftEmpty');
   if(!container) return;
 
@@ -1166,8 +1167,6 @@ function renderLeftList(){
   function renderNode(nodeId, depth = 0){
     let html = '';
     const items = folders[nodeId] ? (folders[nodeId].children || []) : [];
-    const allReports = getHist();
-    const reportMap = new Map(allReports.map(r => [String(r.id), r]));
 
     // 先渲染文件夹，再渲染报告
     const folderItems = items.filter(id => id.startsWith('folder_'));
@@ -1223,8 +1222,7 @@ function renderLeftList(){
 
   // 渲染未分类报告
   function renderUncategorized(){
-    const allReports = getHist();
-    const folders = getFolders();
+    const allReports = list; // 使用外层的 list 变量
     const categorized = new Set();
 
     // 收集所有已分类的报告
@@ -1351,12 +1349,16 @@ function setupDragDrop(){
     // 不能把文件夹拖到自己的子文件夹
     if (draggedType === 'folder') {
       const folders = getFolders();
-      let parent = targetId;
-      while (parent && folders[parent]) {
-        if (parent === draggedItem) return; // 目标是自己的子文件夹
-        // 向上找父级（简化处理，只检查直接父级）
-        break;
+      // 检查目标是否是被拖拽文件夹的子孙
+      function isDescendant(ancestor, descendant) {
+        if (!folders[ancestor] || !folders[ancestor].children) return false;
+        for (const child of folders[ancestor].children) {
+          if (child === descendant) return true;
+          if (child.startsWith('folder_') && isDescendant(child, descendant)) return true;
+        }
+        return false;
       }
+      if (isDescendant(draggedItem, targetId)) return; // 不能把文件夹拖到自己的子文件夹
     }
 
     moveItem(draggedItem, targetId, draggedType === 'folder');
