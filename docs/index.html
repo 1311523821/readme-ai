@@ -389,7 +389,6 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
     <!-- Report area -->
     <div class="report-area" id="reportArea">
       <div class="report-header">
-        <button class="btn btn-sm" id="backBtn" aria-label="返回新建" style="margin-right:8px">← 新建</button>
         <div class="report-title" id="reportTitle">—</div>
         <div class="report-actions">
           <button class="btn btn-sm" id="copyReportBtn" aria-label="复制报告内容">📋 复制</button>
@@ -445,6 +444,10 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
       <label for="modelName">模型名称</label>
       <input type="text" id="modelName" placeholder="deepseek-v4-flash">
     </div>
+    <div class="form-group">
+      <label for="sysPrompt">系统提示词（留空使用默认私人学者）</label>
+      <textarea id="sysPrompt" rows="4" placeholder="留空使用默认：私人学者代读模式..." style="width:100%;background:var(--bg);border:1px solid var(--border);border-radius:var(--r);color:var(--text);font-family:var(--ui);font-size:.82rem;padding:8px 10px;resize:vertical"></textarea>
+    </div>
     <button class="btn btn-primary btn-sm" id="saveConfig" style="width:100%;margin-top:8px">保存配置</button>
   </div>
 </div>
@@ -477,6 +480,7 @@ function loadCfg() {
     if(c.baseUrl) $('#baseUrl').value=c.baseUrl;
     if(c.model) $('#modelName').value=c.model;
     if(c.provider) $('#provider').value=c.provider;
+    if(c.sysPrompt) $('#sysPrompt').value=c.sysPrompt;
   } catch(e){}
 }
 function saveCfg() {
@@ -485,7 +489,8 @@ function saveCfg() {
       apiKey:$('#apiKey').value.trim(),
       baseUrl:$('#baseUrl').value.trim(),
       model:$('#modelName').value.trim(),
-      provider:$('#provider').value
+      provider:$('#provider').value,
+      sysPrompt:$('#sysPrompt').value.trim()
     }));
   } catch(e){
     if (e.name === 'QuotaExceededError' || e.toString().includes('quota')) {
@@ -751,7 +756,11 @@ async function generate() {
   else if(state.mode==='upload'){ if(!state.fileText){status('请先上传文件','error');return;} content=state.fileText; title=state.bookName||'上传文件'; }
   else{ const t=$('#pasteText').value.trim(); if(!t){status('请粘贴内容','error');return;} if(t.length>200000){status('粘贴内容过长（'+t.length+' 字），请限制在 200,000 字以内','error');return;} content=t; const firstLine=t.replace(/^[\s\n#*>-]+/,'').slice(0,30).replace(/\n.*/s,'').trim(); title='✂️ '+(firstLine||'粘贴内容'); }
 
-  const sysP = SYS_PROMPT + (state.detail==='enhanced' ? ENH_SUFFIX : '');
+  const sysP = (function(){
+    const custom=$('#sysPrompt').value.trim();
+    if(custom) return custom;
+    return SYS_PROMPT;
+  })() + (state.detail==='enhanced' ? ENH_SUFFIX : '');
   const userMsg = content ? `请代读以下书籍内容。书名：《${title}》\n\n---\n\n${content}` : `请代读《${title}》这本书。请根据你对这本书的了解来生成代读报告。`;
 
   $('#inputArea').classList.add('hidden');
@@ -1058,10 +1067,6 @@ document.addEventListener('DOMContentLoaded', ()=>{
   // Cancel button
   const cancelBtn=$('#cancelBtn');
   if(cancelBtn) cancelBtn.addEventListener('click',cancelGen);
-
-  // Back button
-  const backBtn=$('#backBtn');
-  if(backBtn) backBtn.addEventListener('click',showNew);
 
   // Generate button
   const genBtn=$('#generateBtn');
