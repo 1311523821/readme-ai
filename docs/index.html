@@ -1050,7 +1050,7 @@ function deleteFolder(folderId){
     const result = [];
     if (!folders[id]) return result;
     for (const child of folders[id].children || []) {
-      if (child.startsWith('folder_')) {
+      if (String(child).startsWith('folder_')) {
         result.push(...getAllChildren(child));
       } else {
         result.push(child);
@@ -1061,7 +1061,7 @@ function deleteFolder(folderId){
 
   // 将报告移到 root
   const children = getAllChildren(folderId);
-  folders.root = [...children.filter(c => !c.startsWith('folder_')), ...folders.root];
+  folders.root = [...children.filter(c => !String(c).startsWith('folder_')), ...folders.root];
 
   // 从父级移除
   for (const key of Object.keys(folders)) {
@@ -1158,7 +1158,7 @@ function renderLeftList(){
     let count = 0;
     if (!folders[folderId]) return 0;
     for (const child of folders[folderId].children || []) {
-      if (child.startsWith('folder_')) {
+      if (String(child).startsWith('folder_')) {
         count += countReports(child);
       } else {
         count++;
@@ -1235,13 +1235,13 @@ function renderLeftList(){
       if (key === 'root') continue;
       if (folders[key].children) {
         for (const child of folders[key].children) {
-          if (!child.startsWith('folder_')) categorized.add(String(child));
+          if (!String(child).startsWith('folder_')) categorized.add(String(child));
         }
       }
     }
     // root 中的报告也算已分类
     for (const child of folders.root || []) {
-      if (!child.startsWith('folder_')) categorized.add(String(child));
+      if (!String(child).startsWith('folder_')) categorized.add(String(child));
     }
 
     const uncategorized = allReports.filter(r => !categorized.has(String(r.id)));
@@ -1359,7 +1359,7 @@ function setupDragDrop(){
         if (!folders[ancestor] || !folders[ancestor].children) return false;
         for (const child of folders[ancestor].children) {
           if (child === descendant) return true;
-          if (child.startsWith('folder_') && isDescendant(child, descendant)) return true;
+          if (String(child).startsWith('folder_') && isDescendant(child, descendant)) return true;
         }
         return false;
       }
