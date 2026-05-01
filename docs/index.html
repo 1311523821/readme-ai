@@ -159,7 +159,7 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
 .md h2{font-size:1.4rem;font-weight:600;color:var(--accent);margin:1.8em 0 .6em;text-indent:0}
 .md h3{font-size:1.15rem;font-weight:600;color:#5C3D2E;margin:1.4em 0 .5em;text-indent:0}
 .md h4{font-size:1rem;font-weight:600;margin:1.2em 0 .4em}
-.md p{margin:.8em 0;line-height:1.8;text-indent:2em}
+.md p{margin:.8em 0;line-height:1.8}
 .md blockquote{border-left:3px solid var(--accent);background:var(--accent-s);padding:12px 16px;margin:1em 0;border-radius:0 var(--r) var(--r) 0;text-align:left}
 .md blockquote p{margin:.3em 0;text-indent:0}
 .md code{font-family:var(--mono);background:rgba(255,105,0,.08);color:#C05000;padding:2px 6px;border-radius:4px;font-size:.85em}
@@ -379,6 +379,7 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
 
         <div class="new-actions">
           <button class="btn btn-primary generate-btn" id="generateBtn" aria-label="开始生成代读报告">🚀 开始代读</button>
+          <button class="btn btn-danger hidden" id="cancelBtn" aria-label="取消生成">✕ 取消</button>
         </div>
 
         <div class="new-hint">报告将直接在右侧生成，历史自动保存在左侧</div>
@@ -388,6 +389,7 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
     <!-- Report area -->
     <div class="report-area" id="reportArea">
       <div class="report-header">
+        <button class="btn btn-sm" id="backBtn" aria-label="返回新建" style="margin-right:8px">← 新建</button>
         <div class="report-title" id="reportTitle">—</div>
         <div class="report-actions">
           <button class="btn btn-sm" id="copyReportBtn" aria-label="复制报告内容">📋 复制</button>
@@ -464,7 +466,7 @@ const PRESETS = {
 };
 
 // ── STATE ──
-let state = { mode:'search', detail:'standard', fileText:'', bookName:'', streaming:false, curReport:null };
+let state = { mode:'search', detail:'standard', fileText:'', bookName:'', streaming:false, curReport:null, abortController:null };
 let statusTimer = null;
 
 // ── CONFIG ──
@@ -500,9 +502,14 @@ function preset() {
 
 // ── TABS ──
 function showNew(){
+  if(state.streaming){
+    if(!confirm('正在生成报告，确定要取消吗？')) return;
+    cancelGen();
+  }
   $('#inputArea').classList.remove('hidden');
   $('#emptyState').style.display='none';
   $('#reportArea').classList.remove('visible');
+  $('#cancelBtn').classList.add('hidden');
   state.curReport=null;
   // Reset to search mode
   setMode('search', $$('[data-mode="search"]')[0]);
@@ -514,6 +521,18 @@ function showNew(){
   // Focus book title
   setTimeout(()=>{const bt2=$('#bookTitle'); if(bt2) bt2.focus();},100);
   renderLeftList();
+}
+
+function cancelGen(){
+  if(state.abortController){ state.abortController.abort(); state.abortController=null; }
+  state.streaming=false;
+  $('#generateBtn').disabled=false;
+  $('#generateBtn').innerHTML='🚀 开始代读';
+  $('#cancelBtn').classList.add('hidden');
+  $('#reportBody').classList.remove('streaming-cursor');
+  $('#progressBar').classList.remove('active');
+  state.curReport=null;
+  status('已取消生成','info');
 }
 
 // ── MODE / DETAIL ──
@@ -730,7 +749,7 @@ async function generate() {
   let title='', content='';
   if(state.mode==='search'){ const t=$('#bookTitle').value.trim(); if(!t){status('请输入书名','error');return;} title=t; }
   else if(state.mode==='upload'){ if(!state.fileText){status('请先上传文件','error');return;} content=state.fileText; title=state.bookName||'上传文件'; }
-  else{ const t=$('#pasteText').value.trim(); if(!t){status('请粘贴内容','error');return;} if(t.length>200000){status('粘贴内容过长（'+t.length+' 字），请限制在 200,000 字以内','error');return;} content=t; title='粘贴内容'; }
+  else{ const t=$('#pasteText').value.trim(); if(!t){status('请粘贴内容','error');return;} if(t.length>200000){status('粘贴内容过长（'+t.length+' 字），请限制在 200,000 字以内','error');return;} content=t; const firstLine=t.replace(/^[\s\n#*>-]+/,'').slice(0,30).replace(/\n.*/s,'').trim(); title='✂️ '+(firstLine||'粘贴内容'); }
 
   const sysP = SYS_PROMPT + (state.detail==='enhanced' ? ENH_SUFFIX : '');
   const userMsg = content ? `请代读以下书籍内容。书名：《${title}》\n\n---\n\n${content}` : `请代读《${title}》这本书。请根据你对这本书的了解来生成代读报告。`;
@@ -748,9 +767,11 @@ async function generate() {
   $('#progressBarFill').style.width='0%';
   $('#generateBtn').disabled=true;
   $('#generateBtn').innerHTML='<span class="spinner"></span> 生成中…';
+  $('#cancelBtn').classList.remove('hidden');
   status('正在生成，请稍候…','info');
   state.streaming=true;
   state.curReport=null;
+  const ac = new AbortController(); state.abortController=ac;
 
   const estLen = state.detail==='enhanced' ? 12000 : 6000;
 
@@ -758,7 +779,8 @@ async function generate() {
     const resp = await fetch(`${baseUrl}/chat/completions`, {
       method:'POST',
       headers:{'Content-Type':'application/json','Authorization':`Bearer ${apiKey}`},
-      body:JSON.stringify({model,stream:true,messages:[{role:'system',content:sysP},{role:'user',content:userMsg}]})
+      body:JSON.stringify({model,stream:true,messages:[{role:'system',content:sysP},{role:'user',content:userMsg}]}),
+      signal: ac.signal
     });
     if(!resp.ok){
       let errMsg = `API 错误 (${resp.status})`;
@@ -817,8 +839,15 @@ async function generate() {
     status('生成完成，共 '+full.length+' 字','ok');
     state.curReport={title,content:full,id:Date.now()};
     saveHist(title, full, state.detail==='enhanced'?'案例加厚版':'标准版');
+    renderLeftList();
     $('#followupSection').style.display='';
   } catch(e) {
+    if (e.name === 'AbortError') {
+      status('已取消生成','info');
+      $('#reportBody').innerHTML='<div style="text-align:center;padding:40px;color:var(--text3)"><div style="font-size:2rem;margin-bottom:12px">🛑</div><div>生成已取消</div></div>';
+      $('#progressBar').classList.remove('active');
+      return;
+    }
     let errMsg = e.message || '未知错误';
     if (e.name === 'TypeError' && e.message.includes('fetch')) errMsg = '网络连接失败，请检查网络或 Base URL 配置';
     else if (e.message.includes('Failed to fetch')) errMsg = '无法连接到 API 服务器，请检查 Base URL 和网络连接';
@@ -830,7 +859,9 @@ async function generate() {
   } finally {
     $('#generateBtn').disabled=false;
     $('#generateBtn').innerHTML='🚀 开始代读';
+    $('#cancelBtn').classList.add('hidden');
     state.streaming=false;
+    state.abortController=null;
     state._progressTimer = setTimeout(()=>$('#progressBar').classList.remove('active'),800);
   }
 }
@@ -913,6 +944,10 @@ function renderLeftList(){
   `).join('');
 }
 function viewR(id){
+  if(state.streaming){
+    if(!confirm('正在生成报告，切换会丢失当前进度。确定要切换吗？')) return;
+    cancelGen();
+  }
   const item=getHist().find(h=>h.id===id);
   if(!item) return;
   $('#inputArea').classList.add('hidden');
@@ -942,6 +977,8 @@ function delR(id){
 
 // ── EXPORT ──
 function copyReport(){
+  if(state.streaming){status('正在生成中，请稍候','info');return;}
+  if(!state.curReport){status('暂无报告可复制','info');return;}
   const text=$('#reportBody').innerText||'';
   function fallback(){
     const ta=document.createElement('textarea');ta.value=text;ta.style.position='fixed';ta.style.opacity='0';
@@ -952,7 +989,8 @@ function copyReport(){
   else fallback();
 }
 function dlReport(){
-  if(!state.curReport) return;
+  if(state.streaming){status('正在生成中，请稍候','info');return;}
+  if(!state.curReport){status('暂无报告可下载','info');return;}
   const blob=new Blob([state.curReport.content],{type:'text/markdown;charset=utf-8'});
   const a=document.createElement('a');a.href=URL.createObjectURL(blob);
   a.download=`代读报告_${state.curReport.title}_${new Date().toISOString().slice(0,10)}.md`;
@@ -1016,6 +1054,14 @@ document.addEventListener('DOMContentLoaded', ()=>{
 
   const saveBtn=$('#saveConfig');
   if(saveBtn) saveBtn.addEventListener('click',()=>{saveCfg();status('配置已保存','ok');});
+
+  // Cancel button
+  const cancelBtn=$('#cancelBtn');
+  if(cancelBtn) cancelBtn.addEventListener('click',cancelGen);
+
+  // Back button
+  const backBtn=$('#backBtn');
+  if(backBtn) backBtn.addEventListener('click',showNew);
 
   // Generate button
   const genBtn=$('#generateBtn');
