@@ -5,18 +5,20 @@
 ![Python](https://img.shields.io/badge/Python-3.10+-blue.svg)
 ![GitHub Pages](https://img.shields.io/badge/GitHub_Pages-Deployed-black.svg)
 ![License](https://img.shields.io/badge/License-MIT-green.svg)
-![Release](https://img.shields.io/badge/Release-v1.1.0-orange.svg)
+![Release](https://img.shields.io/badge/Release-v1.2.0-orange.svg)
 
 ## ✨ 特性
 
 - 📕 **书名代读** — 输入书名，AI 生成 5000-10000 字详细报告
 - 📤 **文件上传** — 支持 PDF / EPUB / TXT，纯前端解析，数据不出浏览器
-- 📋 **粘贴内容** — 直接粘贴书籍片段，即刻生成报告
+- 📋 **粘贴内容** — 直接粘贴书籍片段，自动提取前 30 字作为标题
 - 📝 **结构化报告** — 固定六章节，案例充分、有观点有故事
 - 🔍 **案例加厚版** — 可选更详实模式（8000-12000 字）
 - 💬 **追问功能** — 对报告任意部分继续深入提问
-- 📚 **历史管理** — 报告自动保存，左侧栏浏览、搜索、回看
+- 📚 **历史管理** — 报告自动保存，左侧栏浏览、回看，生成后即时刷新
 - 🔌 **多模型支持** — DeepSeek V4、GPT-4o、Moonshot、通义千问，可自定义
+- 📝 **自定义提示词** — 设置中可编辑完整系统提示词，`{书名}` 自动替换
+- ✕ **随时取消** — 生成中可一键中断 API 请求，不再浪费 token
 - 🛡️ **隐私优先** — API Key 仅存浏览器本地，纯静态部署
 - ♿ **无障碍支持** — 完整的 ARIA 标签，键盘可操作
 - 📦 **桌面版** — 打包为独立 EXE，无需安装浏览器
@@ -87,6 +89,8 @@ readme-ai/
 ├── docs/
 │   ├── index.html          # GitHub Pages 前端（纯静态，单文件 SPA）
 │   ├── favicon.ico         # 桌面版图标
+│   ├── pdf.min.mjs         # PDF 解析（本地化）
+│   ├── pdf.worker.min.js   # PDF Worker（本地化）
 │   ├── marked.min.js       # Markdown 渲染（本地化）
 │   ├── highlight.min.js    # 代码高亮（本地化）
 │   ├── github.min.css      # 代码高亮样式（本地化）
@@ -105,6 +109,18 @@ readme-ai/
 
 ## 📝 版本历史
 
+### V1.2.0 (2026-05-01)
+
+用户体验修复：
+- ✕ **随时取消** — AbortController + 取消按钮，生成中一键中断，不再浪费 token
+- 📝 **自定义提示词** — 设置中可编辑完整系统提示词模板，支持 `{书名}` 变量替换
+- 📋 **粘贴智能标题** — 粘贴内容自动提取前 30 字作为标题，不再显示「粘贴内容」
+- 📚 **历史即时刷新** — 生成完成后左侧列表自动更新，无需手动刷新
+- 🛡️ **状态保护** — 生成中点「+ 新建」或切换历史有确认提示，防止误操作
+- 🔘 **按钮状态** — 生成中复制/下载按钮提示「请稍候」，无报告时提示「暂无报告」
+- 🐛 **PDF 解析修复** — pdf.js worker 本地化，国内网络不再加载失败
+- 🐛 **进度条竞态修复** — 快速重新生成时进度条不再消失
+
 ### V1.1.0 (2026-05-01)
 
 前端增强：
@@ -117,21 +133,16 @@ readme-ai/
 - localStorage 配额溢出时自动裁剪最旧记录，防止静默丢数据
 - 无障碍 ARIA 标签全覆盖，键盘可操作
 - CSS 过渡动画优化，focus-visible 聚焦环全局生效
-- Markdown 渲染安全加固
 
 EXE 打包修复：
 - 跨平台 `--add-data` 分隔符适配（Windows `;` / Unix `:`）
 - PyInstaller onefile 模式 `sys._MEIPASS` 路径支持
-- 图标文件缺失时容错处理，不再中断打包
-- pywebview 安装检查，打包前自动补全依赖
+- pywebview 安装检查，打包前自动补全
 
 CDN 本地化：
 - marked.js、highlight.js、purify.js 及样式文件全部本地化
-- 桌面版完全离线可用，不受 CDN 网络影响
-
-依赖更新：
-- `pywebview>=5.0` — 桌面版依赖
-- `pyinstaller>=6.0` — 打包工具
+- PDF 解析组件本地化
+- 桌面版完全离线可用
 
 ### V1.0.0 (2026-05-01)
 
@@ -140,8 +151,8 @@ CDN 本地化：
 
 ## 📌 路线图
 
-- [ ] V1.2 — 知识库沉淀：自动解析为结构化笔记（YAML + 标签）
-- [ ] V1.3 — 智能问答：基于书库回答问题，引用多本书
+- [ ] V1.3 — 知识库沉淀：自动解析为结构化笔记（YAML + 标签）
+- [ ] V1.4 — 智能问答：基于书库回答问题，引用多本书
 - [ ] V2.0 — 跨书对话：让不同书的观点互相辩论
 - [ ] V2.1 — 批判模式：一键生成对一本书的全盘反驳
 
