@@ -4,8 +4,9 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>读我 — AI 代读系统</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%23FFF8F0'/%3E%3Ctext x='16' y='24' text-anchor='middle' font-size='20'%3E📖%3C/text%3E%3C/svg%3E">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css">
+<link rel="stylesheet" href="github.min.css">
 <style>
 *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
 :root{
@@ -99,6 +100,29 @@ textarea{resize:vertical;min-height:80px;line-height:1.6}
 .spinner{display:inline-block;width:16px;height:16px;border:2px solid rgba(255,105,0,.3);border-top-color:var(--accent);border-radius:50%;animation:spin .6s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
 .btn-primary:disabled .spinner{border-color:rgba(255,105,0,.15);border-top-color:var(--text3)}
+
+/* SKELETON LOADING */
+.skeleton{background:linear-gradient(90deg,var(--bg2) 25%,#FFF0E0 50%,var(--bg2) 75%);background-size:200% 100%;animation:shimmer 1.5s infinite;border-radius:6px}
+@keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
+.skeleton-line{height:16px;margin-bottom:10px}
+.skeleton-line:last-child{width:60%}
+.skeleton-heading{height:24px;width:40%;margin-bottom:16px}
+.skeleton-block{margin-bottom:28px}
+.skeleton-paragraph .skeleton-line:nth-child(1){width:100%}
+.skeleton-paragraph .skeleton-line:nth-child(2){width:95%}
+.skeleton-paragraph .skeleton-line:nth-child(3){width:88%}
+.skeleton-paragraph .skeleton-line:nth-child(4){width:70%}
+
+/* SMOOTHER TRANSITIONS */
+.left-panel{transition:width .3s ease,min-width .3s ease}
+.report-area{transition:opacity .3s}
+.report-area.visible{opacity:1}
+.btn,.btn-primary,.radio-card,.detail-card,.dropzone{transition:all .2s cubic-bezier(.4,0,.2,1)}
+.left-item{transition:all .15s cubic-bezier(.4,0,.2,1)}
+.progress-bar-fill{transition:width .4s cubic-bezier(.4,0,.2,1)}
+
+/* FOCUS-VISIBLE ring for ALL interactive */
+button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,.radio-card:focus-visible,.detail-card:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:4px}
 
 
 /* MAIN */
@@ -255,31 +279,31 @@ textarea{resize:vertical;min-height:80px;line-height:1.6}
 </head>
 <body>
 
-<header class="topbar">
-  <div class="topbar-logo">📖 <span>读我</span></div>
+<header class="topbar" aria-label="顶部导航">
+  <div class="topbar-logo" aria-label="读我，AI代读系统">📖 <span>读我</span></div>
   <div class="topbar-spacer"></div>
-  <button class="sidebar-toggle" id="sidebarToggle" title="切换侧栏">☰</button>
-  <button class="sidebar-toggle" id="settingsBtn" title="设置">⚙️</button>
+  <button class="sidebar-toggle" id="sidebarToggle" title="切换侧栏" aria-label="切换侧栏">☰</button>
+  <button class="sidebar-toggle" id="settingsBtn" title="设置" aria-label="打开设置">⚙️</button>
 </header>
 
 <div class="app-layout">
 
   <!-- LEFT PANEL: History -->
-  <aside class="left-panel" id="leftPanel">
+  <aside class="left-panel" id="leftPanel" aria-label="历史记录面板">
     <div class="left-header">
       <span class="left-header-title">📚 已读</span>
-      <button class="btn-new" id="btnNew">+ 新建</button>
+      <button class="btn-new" id="btnNew" aria-label="新建报告">+ 新建</button>
     </div>
     <div class="left-list" id="leftList"></div>
     <div class="left-empty" id="leftEmpty">
       <div class="left-empty-icon">📚</div>
-      <div class="left-empty-text">还没有报告<br>点击「新建」开始</div>
+      <div class="left-empty-text">还没有阅读报告<br>点击「+ 新建」开始你的 AI 代读之旅</div>
     </div>
   </aside>
 
   <!-- RIGHT: Main Content -->
-  <main class="main" id="mainContent">
-    <div class="status-area" id="statusArea"></div>
+  <main class="main" id="mainContent" aria-label="主要内容区域">
+    <div class="status-area" id="statusArea" role="status" aria-live="polite"></div>
 
     <!-- Empty state -->
     <div class="empty-state" id="emptyState">
@@ -354,7 +378,7 @@ textarea{resize:vertical;min-height:80px;line-height:1.6}
         </div>
 
         <div class="new-actions">
-          <button class="btn btn-primary generate-btn" id="generateBtn">🚀 开始代读</button>
+          <button class="btn btn-primary generate-btn" id="generateBtn" aria-label="开始生成代读报告">🚀 开始代读</button>
         </div>
 
         <div class="new-hint">报告将直接在右侧生成，历史自动保存在左侧</div>
@@ -366,8 +390,8 @@ textarea{resize:vertical;min-height:80px;line-height:1.6}
       <div class="report-header">
         <div class="report-title" id="reportTitle">—</div>
         <div class="report-actions">
-          <button class="btn btn-sm" id="copyReportBtn">📋 复制</button>
-          <button class="btn btn-sm" id="downloadReportBtn">💾 下载</button>
+          <button class="btn btn-sm" id="copyReportBtn" aria-label="复制报告内容">📋 复制</button>
+          <button class="btn btn-sm" id="downloadReportBtn" aria-label="下载报告">💾 下载</button>
         </div>
       </div>
       <div class="progress-bar" id="progressBar">
@@ -377,8 +401,8 @@ textarea{resize:vertical;min-height:80px;line-height:1.6}
       <div class="followup-section" id="followupSection" style="display:none">
         <div class="followup-title">💬 追问</div>
         <div class="followup-input-row">
-          <input type="text" id="followupInput" placeholder="对报告内容有疑问？在这里追问...">
-          <button class="btn btn-primary" id="followupBtn">发送</button>
+          <input type="text" id="followupInput" placeholder="对报告内容有疑问？在这里追问..." aria-label="追问输入框">
+          <button class="btn btn-primary" id="followupBtn" aria-label="发送追问">发送</button>
         </div>
         <div id="followupResponses"></div>
       </div>
@@ -387,7 +411,7 @@ textarea{resize:vertical;min-height:80px;line-height:1.6}
 </div>
 
 <!-- SETTINGS MODAL -->
-<div class="modal-overlay" id="settingsModal">
+<div class="modal-overlay" id="settingsModal" role="dialog" aria-modal="true" aria-label="设置对话框">
   <div class="modal">
     <div class="modal-title">
       <span>⚙️ 模型配置</span>
@@ -423,9 +447,9 @@ textarea{resize:vertical;min-height:80px;line-height:1.6}
   </div>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/marked@12.0.0/marked.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/dompurify@3.0.6/dist/purify.min.js"></script>
+<script src="marked.min.js"></script>
+<script src="highlight.min.js"></script>
+<script src="purify.min.js"></script>
 <script>
 const $ = s => document.querySelector(s);
 const $$ = s => document.querySelectorAll(s);
@@ -461,7 +485,13 @@ function saveCfg() {
       model:$('#modelName').value.trim(),
       provider:$('#provider').value
     }));
-  } catch(e){ status('存储空间不足','error'); }
+  } catch(e){
+    if (e.name === 'QuotaExceededError' || e.toString().includes('quota')) {
+      status('存储空间已满，请清理历史记录后重试','error');
+    } else {
+      status('配置保存失败','error');
+    }
+  }
 }
 function preset() {
   const p = PRESETS[$('#provider').value];
@@ -522,7 +552,22 @@ async function handleFile(inp) {
   const file = inp.files[0];
   if(!file) return;
   const fn = $('#dropzoneFilename');
-  fn.textContent = file.name+' — 解析中…'; fn.classList.remove('hidden');
+
+  // File size check
+  const maxSize = 50 * 1024 * 1024; // 50MB
+  if (file.size > maxSize) {
+    fn.textContent = '文件过大 ('+(file.size/1024/1024).toFixed(1)+' MB)，最大支持 50 MB';
+    fn.style.color = 'var(--err)'; fn.classList.remove('hidden');
+    status('文件过大，请使用小于 50 MB 的文件','error');
+    return;
+  }
+  // Warn for large PDFs that may crash
+  const ext = file.name.split('.').pop().toLowerCase();
+  if (ext === 'pdf' && file.size > 10 * 1024 * 1024) {
+    status('⚠️ PDF 文件较大（'+(file.size/1024/1024).toFixed(1)+' MB），解析可能需要较长时间，请耐心等待','info');
+  }
+
+  fn.textContent = file.name+' — 解析中…'; fn.classList.remove('hidden'); fn.style.color='';
   try {
     const r = await parseFile(file);
     state.fileText = r.text; state.bookName = r.book_name;
@@ -543,47 +588,82 @@ async function parseFile(file) {
     return {text,book_name:name.replace(/\.[^.]+$/,''),chars:text.length};
   }
   if(ext==='epub'){
-    const JSZip=(await import('https://cdn.jsdelivr.net/npm/jszip@3.10.1/+esm')).default;
-    const zip=await JSZip.loadAsync(await file.arrayBuffer());
-    const parser=new DOMParser(); let text='';
-    // Try to find OPF for spine order
-    let opfPath='';
-    const container=zip.file('META-INF/container.xml');
-    if(container){
-      try{
-        const cDoc=parser.parseFromString(await container.async('string'),'application/xml');
-        const root=cDoc.querySelector('rootfile');
-        if(root) opfPath=root.getAttribute('full-path');
-      }catch(e){}
-    }
-    let htmlFiles=[];
-    zip.forEach((path,entry)=>{ if(/\.(x?html?)$/i.test(path)&&!entry.dir) htmlFiles.push({path,entry}); });
-    if(opfPath){
-      try{
-        const opfFile=zip.file(opfPath);
-        if(opfFile){
-          const opfDoc=parser.parseFromString(await opfFile.async('string'),'application/xml');
-          const spine=opfDoc.querySelector('spine');
-          if(spine){
-            const itemrefs=[...spine.querySelectorAll('itemref')];
-            const manifest=opfDoc.querySelector('manifest');
-            const order=[];
-            for(const ref of itemrefs){
-              const id=ref.getAttribute('idref');
-              if(manifest){ const item=manifest.querySelector(`item[id="${id}"]`); if(item) order.push(item.getAttribute('href')); }
-            }
-            if(order.length) htmlFiles.sort((a,b)=>{
-              const ai=order.findIndex(h=>a.path.endsWith(h)); const bi=order.findIndex(h=>b.path.endsWith(h));
-              return (ai<0?999:ai)-(bi<0?999:bi);
-            });
+    try {
+      const JSZip=(await import('https://cdn.jsdelivr.net/npm/jszip@3.10.1/+esm')).default;
+      const zip=await JSZip.loadAsync(await file.arrayBuffer());
+      const parser=new DOMParser(); let text='';
+      // Try to find OPF for spine order
+      let opfPath='';
+      const container=zip.file('META-INF/container.xml');
+      if(container){
+        try{
+          const cStr = await container.async('string');
+          const cDoc=parser.parseFromString(cStr,'application/xml');
+          // Also try text/xml for broken container.xml
+          if (!cDoc || cDoc.querySelector('parsererror')) {
+            const cDoc2 = parser.parseFromString(cStr, 'text/xml');
+            const root=cDoc2.querySelector('rootfile');
+            if(root) opfPath=root.getAttribute('full-path') || root.getAttribute('full_path');
+          } else {
+            const root=cDoc.querySelector('rootfile');
+            if(root) opfPath=root.getAttribute('full-path') || root.getAttribute('full_path');
           }
-        }
-      }catch(e){}
+        }catch(e){ console.warn('EPUB container parse error:', e); }
+      }
+      // Resolve relative OPF path
+      if (opfPath && opfPath.includes('/')) {
+        const containerDir = 'META-INF/container.xml'.split('/').slice(0,-1).join('/');
+      }
+      let htmlFiles=[];
+      zip.forEach((path,entry)=>{ if(/\.(x?html?)$/i.test(path)&&!entry.dir) htmlFiles.push({path,entry}); });
+      if (htmlFiles.length === 0) throw new Error('EPUB 文件中未找到 HTML 内容，可能文件已损坏');
+      if(opfPath){
+        try{
+          const opfFile=zip.file(opfPath);
+          if(opfFile){
+            const opfDoc=parser.parseFromString(await opfFile.async('string'),'application/xml');
+            const spine=opfDoc.querySelector('spine');
+            if(spine){
+              const itemrefs=[...spine.querySelectorAll('itemref')];
+              const manifest=opfDoc.querySelector('manifest');
+              const order=[];
+              for(const ref of itemrefs){
+                const id=ref.getAttribute('idref');
+                if(manifest){
+                  const item=manifest.querySelector('item[id=\"'+id.replace(/"/g,'\\\\\"')+'\"]');
+                  if(item) order.push(item.getAttribute('href'));
+                }
+              }
+              if(order.length) htmlFiles.sort((a,b)=>{
+                const ai=order.findIndex(h=>a.path.endsWith(h)); const bi=order.findIndex(h=>b.path.endsWith(h));
+                return (ai<0?999:ai)-(bi<0?999:bi);
+              });
+            }
+          }
+        }catch(e){ console.warn('EPUB spine parse error:', e); }
+      }
+      for(const{entry}of htmlFiles){
+        try {
+          const c=await entry.async('string');
+          const doc=parser.parseFromString(c,'application/xhtml+xml');
+          if (!doc || doc.querySelector('parsererror')) {
+            // Try HTML parser fallback
+            const doc2 = parser.parseFromString(c, 'text/html');
+            text+=(doc2.body?doc2.body.textContent:'')+'\\n';
+          } else {
+            text+=(doc.body?doc.body.textContent:'')+'\\n';
+          }
+        } catch(e) { console.warn('EPUB chapter parse error:', e); }
+        if(text.length>200000) break;
+      }
+      if (!text.trim()) throw new Error('无法从 EPUB 中提取文本内容');
+      let bookName=name.replace(/\\.[^.]+$/,'');
+      if(opfPath){ try{ const opf=zip.file(opfPath); if(opf){ const oStr=await opf.async('string'); const oDoc=parser.parseFromString(oStr,'application/xml'); if(!oDoc.querySelector('parsererror')){ const t=oDoc.querySelector('title'); if(t&&t.textContent.trim()) bookName=t.textContent.trim(); } } }catch(e){} }
+      return {text,book_name:bookName,chars:text.length};
+    } catch(e) {
+      if (e.message && e.message.includes('不支持的格式')) throw e;
+      throw new Error('EPUB 解析失败: '+(e.message||'文件可能已损坏'));
     }
-    for(const{entry}of htmlFiles){ const c=await entry.async('string'); const doc=parser.parseFromString(c,'application/xhtml+xml'); text+=(doc.body?doc.body.textContent:'')+'\n'; if(text.length>200000) break; }
-    let bookName=name.replace(/\.[^.]+$/,'');
-    if(opfPath){ try{ const opf=zip.file(opfPath); const oDoc=parser.parseFromString(await opf.async('string'),'application/xml'); const t=oDoc.querySelector('title'); if(t&&t.textContent.trim()) bookName=t.textContent.trim(); }catch(e){} }
-    return {text,book_name:bookName,chars:text.length};
   }
   throw new Error('不支持的格式: '+ext);
 }
@@ -645,7 +725,7 @@ async function generate() {
   let title='', content='';
   if(state.mode==='search'){ const t=$('#bookTitle').value.trim(); if(!t){status('请输入书名','error');return;} title=t; }
   else if(state.mode==='upload'){ if(!state.fileText){status('请先上传文件','error');return;} content=state.fileText; title=state.bookName||'上传文件'; }
-  else{ const t=$('#pasteText').value.trim(); if(!t){status('请粘贴内容','error');return;} content=t; title='粘贴内容'; }
+  else{ const t=$('#pasteText').value.trim(); if(!t){status('请粘贴内容','error');return;} if(t.length>200000){status('粘贴内容过长（'+t.length+' 字），请限制在 200,000 字以内','error');return;} content=t; title='粘贴内容'; }
 
   const sysP = SYS_PROMPT + (state.detail==='enhanced' ? ENH_SUFFIX : '');
   const userMsg = content ? `请代读以下书籍内容。书名：《${title}》\n\n---\n\n${content}` : `请代读《${title}》这本书。请根据你对这本书的了解来生成代读报告。`;
@@ -653,7 +733,7 @@ async function generate() {
   $('#inputArea').classList.add('hidden');
   $('#emptyState').style.display='none';
   $('#reportArea').classList.add('visible');
-  $('#reportBody').innerHTML='';
+  $('#reportBody').innerHTML='<div class="skeleton-block skeleton-paragraph"><div class="skeleton skeleton-heading"></div><div class="skeleton skeleton-line"></div><div class="skeleton skeleton-line"></div><div class="skeleton skeleton-line"></div><div class="skeleton skeleton-line" style="width:50%"></div></div><div class="skeleton-block skeleton-paragraph"><div class="skeleton skeleton-heading" style="width:30%"></div><div class="skeleton skeleton-line"></div><div class="skeleton skeleton-line"></div><div class="skeleton skeleton-line"></div><div class="skeleton skeleton-line" style="width:65%"></div></div><div class="skeleton-block skeleton-paragraph"><div class="skeleton skeleton-heading" style="width:35%"></div><div class="skeleton skeleton-line"></div><div class="skeleton skeleton-line"></div><div class="skeleton skeleton-line"></div></div>';
   $('#reportBody').classList.add('streaming-cursor');
   $('#followupSection').style.display='none';
   $('#followupResponses').innerHTML='';
@@ -673,7 +753,24 @@ async function generate() {
       headers:{'Content-Type':'application/json','Authorization':`Bearer ${apiKey}`},
       body:JSON.stringify({model,stream:true,messages:[{role:'system',content:sysP},{role:'user',content:userMsg}]})
     });
-    if(!resp.ok){ const e=await resp.text(); throw new Error(`API 错误 (${resp.status}): ${e.slice(0,200)}`); }
+    if(!resp.ok){
+      let errMsg = `API 错误 (${resp.status})`;
+      try {
+        const errBody = await resp.text();
+        let parsed;
+        try { parsed = JSON.parse(errBody); } catch(_) { parsed = null; }
+        if (parsed && parsed.error && parsed.error.message) {
+          errMsg += ': ' + parsed.error.message;
+        } else if (errBody.slice(0,300).trim()) {
+          errMsg += ': ' + errBody.slice(0,300);
+        }
+      } catch(_) {}
+      if (resp.status === 401) errMsg = 'API Key 无效或未授权，请检查设置中的 API Key';
+      else if (resp.status === 403) errMsg = '访问被拒绝，请检查 API Key 权限或账户余额';
+      else if (resp.status === 429) errMsg = '请求过于频繁，请稍后再试';
+      else if (resp.status >= 500) errMsg = '服务器错误，请稍后重试或切换服务商';
+      throw new Error(errMsg);
+    }
 
     const reader=resp.body.getReader(), dec=new TextDecoder();
     let full='', buf='';
@@ -716,8 +813,14 @@ async function generate() {
     saveHist(title, full, state.detail==='enhanced'?'案例加厚版':'标准版');
     $('#followupSection').style.display='';
   } catch(e) {
-    status('生成失败: '+e.message,'error');
+    let errMsg = e.message || '未知错误';
+    if (e.name === 'TypeError' && e.message.includes('fetch')) errMsg = '网络连接失败，请检查网络或 Base URL 配置';
+    else if (e.message.includes('Failed to fetch')) errMsg = '无法连接到 API 服务器，请检查 Base URL 和网络连接';
+    status('生成失败: '+errMsg,'error');
     $('#reportBody').classList.remove('streaming-cursor');
+    if (!$('#reportBody').textContent.trim() || $('#reportBody').querySelector('.skeleton')) {
+      $('#reportBody').innerHTML='<div style="text-align:center;padding:40px;color:var(--text3)"><div style="font-size:2rem;margin-bottom:12px">⚠️</div><div>'+escHtml(errMsg)+'</div><div style="margin-top:8px;font-size:.8rem">请检查 API 配置后重试</div></div>';
+    }
   } finally {
     $('#generateBtn').disabled=false;
     $('#generateBtn').innerHTML='🚀 开始代读';
@@ -778,7 +881,13 @@ function saveHist(title,content,mode){
   const hid=Date.now();
   list.unshift({id:hid,title,mode,date:new Date().toLocaleString('zh-CN'),content});
   if(list.length>50) list.length=50;
-  try{localStorage.setItem('rh',JSON.stringify(list));}catch(e){status('存储空间不足','error');}
+  try{localStorage.setItem('rh',JSON.stringify(list));}catch(e){
+    // Quota exceeded: trim older entries
+    if (e.name === 'QuotaExceededError' || e.toString().includes('quota')) {
+      status('存储空间不足，已自动清理旧记录','info');
+      while(list.length>5){ list.pop(); try{localStorage.setItem('rh',JSON.stringify(list));break;}catch(e2){continue;} }
+    }
+  }
 }
 function renderLeftList(){
   const list=getHist();
@@ -854,9 +963,15 @@ function status(m,t){
 }
 function escHtml(s){const d=document.createElement('div');d.textContent=s;return d.innerHTML;}
 function md(s){
+  if(!s||typeof s!=='string') return '';
   if(typeof marked==='undefined') return escHtml(s);
-  const raw=marked.parse(s);
-  return typeof DOMPurify!=='undefined' ? DOMPurify.sanitize(raw) : raw;
+  try {
+    const raw=marked.parse(s);
+    return typeof DOMPurify!=='undefined' ? DOMPurify.sanitize(raw) : raw;
+  } catch(e) {
+    console.warn('Markdown parse error:', e);
+    return escHtml(s);
+  }
 }
 
 // ── INIT ──

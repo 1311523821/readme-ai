@@ -7,11 +7,16 @@ import os
 
 
 def get_html_path():
-    """获取 docs/index.html 的绝对路径"""
-    base = os.path.dirname(os.path.abspath(__file__))
+    """获取 docs/index.html 的绝对路径（支持 PyInstaller 打包）"""
+    # PyInstaller onefile 模式：资源解压到 sys._MEIPASS
+    if getattr(sys, 'frozen', False):
+        base = sys._MEIPASS
+    else:
+        base = os.path.dirname(os.path.abspath(__file__))
     path = os.path.join(base, 'docs', 'index.html')
     if not os.path.exists(path):
         print(f"错误: 找不到 {path}")
+        print("提示: 请确保 docs/index.html 存在，或使用 --add-data 打包")
         sys.exit(1)
     return path
 

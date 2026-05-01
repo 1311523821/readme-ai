@@ -4,3 +4,5 @@ ebooklib>=0.18
 openai>=1.0.0
 markdown>=3.5
 python-dotenv>=1.0.0
+pywebview>=5.0
+pyinstaller>=6.0
