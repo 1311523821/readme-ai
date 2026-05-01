@@ -1,0 +1,4 @@
+# Vercel 部署版
+# api/index.py 中的文件解析需要的依赖
+pdfplumber>=0.10.0
+ebooklib>=0.18
