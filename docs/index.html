@@ -580,12 +580,17 @@ async function parseFile(file) {
   const name = file.name, ext = name.split('.').pop().toLowerCase();
   if(ext==='txt'||ext==='md'){ const t=await file.text(); return {text:t,book_name:name.replace(/\.[^.]+$/,''),chars:t.length}; }
   if(ext==='pdf'){
-    const pdfjsLib = await import('https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.4.168/pdf.min.mjs');
-    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.4.168/pdf.worker.min.js';
-    const pdf = await pdfjsLib.getDocument({data:await file.arrayBuffer()}).promise;
-    let text='';
-    for(let i=1;i<=pdf.numPages;i++){ const page=await pdf.getPage(i); const tc=await page.getTextContent(); text+=tc.items.map(s=>s.str).join('')+'\n'; }
-    return {text,book_name:name.replace(/\.[^.]+$/,''),chars:text.length};
+    let pdfjsLib;
+    try { pdfjsLib = await import('./pdf.min.mjs'); } catch(e) { pdfjsLib = await import('https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.4.168/pdf.min.mjs'); }
+    pdfjsLib.GlobalWorkerOptions.workerSrc = './pdf.worker.min.js';
+    try {
+      const pdf = await pdfjsLib.getDocument({data:await file.arrayBuffer()}).promise;
+      let text='';
+      for(let i=1;i<=pdf.numPages;i++){ const page=await pdf.getPage(i); const tc=await page.getTextContent(); text+=tc.items.map(s=>s.str).join('')+'\n'; }
+      return {text,book_name:name.replace(/\.[^.]+$/,''),chars:text.length};
+    } catch(e) {
+      throw new Error('PDF 解析组件加载失败，请检查网络连接');
+    }
   }
   if(ext==='epub'){
     try {
@@ -733,10 +738,12 @@ async function generate() {
   $('#inputArea').classList.add('hidden');
   $('#emptyState').style.display='none';
   $('#reportArea').classList.add('visible');
+  $('#reportTitle').textContent='📖 '+title;
   $('#reportBody').innerHTML='<div class="skeleton-block skeleton-paragraph"><div class="skeleton skeleton-heading"></div><div class="skeleton skeleton-line"></div><div class="skeleton skeleton-line"></div><div class="skeleton skeleton-line"></div><div class="skeleton skeleton-line" style="width:50%"></div></div><div class="skeleton-block skeleton-paragraph"><div class="skeleton skeleton-heading" style="width:30%"></div><div class="skeleton skeleton-line"></div><div class="skeleton skeleton-line"></div><div class="skeleton skeleton-line"></div><div class="skeleton skeleton-line" style="width:65%"></div></div><div class="skeleton-block skeleton-paragraph"><div class="skeleton skeleton-heading" style="width:35%"></div><div class="skeleton skeleton-line"></div><div class="skeleton skeleton-line"></div><div class="skeleton skeleton-line"></div></div>';
   $('#reportBody').classList.add('streaming-cursor');
   $('#followupSection').style.display='none';
   $('#followupResponses').innerHTML='';
+  clearTimeout(state._progressTimer);
   $('#progressBar').classList.add('active');
   $('#progressBarFill').style.width='0%';
   $('#generateBtn').disabled=true;
@@ -807,7 +814,6 @@ async function generate() {
     $('#reportBody').classList.remove('streaming-cursor');
     $('#reportBody').innerHTML=md(full);
     $('#progressBarFill').style.width='100%';
-    $('#reportTitle').textContent='📖 '+title;
     status('生成完成，共 '+full.length+' 字','ok');
     state.curReport={title,content:full,id:Date.now()};
     saveHist(title, full, state.detail==='enhanced'?'案例加厚版':'标准版');
@@ -825,7 +831,7 @@ async function generate() {
     $('#generateBtn').disabled=false;
     $('#generateBtn').innerHTML='🚀 开始代读';
     state.streaming=false;
-    setTimeout(()=>$('#progressBar').classList.remove('active'),800);
+    state._progressTimer = setTimeout(()=>$('#progressBar').classList.remove('active'),800);
   }
 }
 
