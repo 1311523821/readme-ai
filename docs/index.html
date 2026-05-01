@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>📖 读我 — AI 代读系统</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📖</text></svg>">
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box}
+        :root{--p:#667eea;--pd:#5a6fd6;--bg:#f5f7fb;--card:#fff;--t:#1a1a2e;--ts:#6b7280;--bd:#e5e7eb;--ok:#10b981;--err:#ef4444}
+        body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--t);line-height:1.6;min-height:100vh}
+        .header{background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);color:#fff;padding:2.5rem 1rem;text-align:center}
+        .header h1{font-size:2.8rem;margin-bottom:.3rem}
+        .header p{opacity:.9;font-size:1.1rem}
+        .wrap{max-width:960px;margin:0 auto;padding:1.5rem}
+
+        /* Tabs */
+        .tabs{display:flex;background:var(--card);border-radius:12px;overflow:hidden;margin-bottom:1.5rem;box-shadow:0 1px 3px rgba(0,0,0,.08)}
+        .tab{flex:1;padding:1rem;text-align:center;cursor:pointer;border:none;background:none;font-size:1rem;color:var(--ts);transition:.2s;font-weight:500}
+        .tab.active{color:var(--p);background:rgba(102,126,234,.08);border-bottom:3px solid var(--p)}
+        .tab:hover{background:rgba(102,126,234,.04)}
+
+        /* Cards */
+        .card{background:var(--card);border-radius:12px;padding:1.5rem;margin-bottom:1rem;box-shadow:0 1px 3px rgba(0,0,0,.08)}
+        .form-group{margin-bottom:1rem}
+        .form-group label{display:block;margin-bottom:.4rem;font-weight:600;font-size:.95rem}
+        input[type=text],input[type=password],input[type=url],select,textarea{width:100%;padding:.75rem 1rem;border:2px solid var(--bd);border-radius:8px;font-size:1rem;transition:.2s;outline:none;font-family:inherit}
+        input:focus,select:focus,textarea:focus{border-color:var(--p)}
+        textarea{resize:vertical;min-height:80px}
+
+        /* Radio Cards */
+        .rc-group{display:flex;gap:.75rem;margin-bottom:1rem}
+        .rc{flex:1;padding:1rem;border:2px solid var(--bd);border-radius:10px;cursor:pointer;text-align:center;transition:.2s}
+        .rc.sel{border-color:var(--p);background:rgba(102,126,234,.06)}
+        .rc:hover{border-color:var(--p)}
+        .rc input{display:none}
+        .rc .ic{font-size:1.5rem;margin-bottom:.3rem}
+        .rc .lb{font-weight:600;font-size:.9rem}
+        .rc .ds{font-size:.8rem;color:var(--ts);margin-top:.2rem}
+
+        /* Buttons */
+        .btn{padding:.75rem 2rem;border:none;border-radius:8px;font-size:1rem;font-weight:600;cursor:pointer;transition:.2s}
+        .btn-p{background:linear-gradient(135deg,#667eea,#764ba2);color:#fff}
+        .btn-p:hover{transform:translateY(-1px);box-shadow:0 4px 12px rgba(102,126,234,.4)}
+        .btn-p:disabled{opacity:.5;cursor:not-allowed;transform:none;box-shadow:none}
+        .btn-s{background:var(--bg);color:var(--t)}
+        .btn-s:hover{background:var(--bd)}
+        .btn-sm{padding:.5rem 1rem;font-size:.9rem}
+
+        /* Upload */
+        .upload{border:2px dashed var(--bd);border-radius:12px;padding:2rem;text-align:center;cursor:pointer;transition:.2s;margin-bottom:1rem}
+        .upload:hover,.upload.over{border-color:var(--p);background:rgba(102,126,234,.04)}
+        .upload .ic{font-size:2rem;margin-bottom:.5rem}
+        .upload .tx{color:var(--ts)}
+        .upload .fn{color:var(--p);font-weight:600;margin-top:.5rem}
+
+        /* Layout */
+        .ml{display:flex;gap:1.5rem}
+        .sb{width:280px;flex-shrink:0}
+        .mc{flex:1;min-width:0}
+        @media(max-width:768px){.ml{flex-direction:column}.sb{width:100%}.rc-group{flex-direction:column}.header h1{font-size:2rem}}
+
+        /* Report */
+        .md h1{font-size:1.6rem;border-bottom:2px solid var(--bd);padding-bottom:.5rem;margin:1.5rem 0 .5rem}
+        .md h2{font-size:1.35rem;color:var(--p);margin:1.3rem 0 .5rem}
+        .md h3{font-size:1.15rem;margin:1rem 0 .4rem}
+        .md p{margin-bottom:.8rem}
+        .md ul,.md ol{margin-left:1.5rem;margin-bottom:.8rem}
+        .md li{margin-bottom:.3rem}
+        .md blockquote{border-left:4px solid var(--p);padding:.5rem 1rem;margin:1rem 0;background:rgba(102,126,234,.05);border-radius:0 8px 8px 0}
+        .md code{background:rgba(102,126,234,.1);padding:.15rem .4rem;border-radius:4px;font-size:.9em}
+        .md pre{background:#1a1a2e;color:#e0e0e0;padding:1rem;border-radius:8px;overflow-x:auto;margin:1rem 0}
+        .md pre code{background:none;padding:0}
+        .md table{width:100%;border-collapse:collapse;margin:1rem 0}
+        .md th,.md td{border:1px solid var(--bd);padding:.6rem;text-align:left}
+        .md th{background:rgba(102,126,234,.08);font-weight:600}
+        .md hr{border:none;border-top:2px solid var(--bd);margin:1.5rem 0}
+
+        /* Progress */
+        .prog{margin:1rem 0}
+        .prog-bar{height:4px;background:var(--bd);border-radius:2px;overflow:hidden}
+        .prog-fill{height:100%;background:linear-gradient(90deg,#667eea,#764ba2);border-radius:2px;width:0%;transition:.3s}
+        .prog-txt{font-size:.85rem;color:var(--ts);margin-top:.3rem}
+
+        /* Status */
+        .st{padding:.75rem 1rem;border-radius:8px;margin-bottom:1rem;font-size:.95rem}
+        .st.ok{background:rgba(16,185,129,.1);color:#059669}
+        .st.er{background:rgba(239,68,68,.1);color:#dc2626}
+        .st.inf{background:rgba(102,126,234,.1);color:var(--p)}
+
+        /* Followup */
+        .fu{margin-top:1.5rem;padding-top:1.5rem;border-top:2px solid var(--bd)}
+        .fu-in{display:flex;gap:.75rem}
+        .fu-in input{flex:1}
+
+        /* History */
+        .hi{display:flex;justify-content:space-between;align-items:center;padding:1rem;border-bottom:1px solid var(--bd);cursor:pointer;transition:.2s}
+        .hi:hover{background:rgba(102,126,234,.04)}
+        .hi:last-child{border-bottom:none}
+        .hi .ti{font-weight:600;font-size:1.05rem}
+        .hi .mt{font-size:.85rem;color:var(--ts);margin-top:.2rem}
+        .empty{text-align:center;padding:3rem;color:var(--ts)}
+        .empty .ic{font-size:3rem;margin-bottom:.5rem}
+
+        /* About */
+        .ab h2{color:var(--p);margin:1.5rem 0 .8rem}
+        .ab p{margin-bottom:.8rem}
+        .ab ul{margin-left:1.5rem;margin-bottom:1rem}
+        .ab li{margin-bottom:.3rem}
+        .ab table{width:100%;border-collapse:collapse;margin:1rem 0}
+        .ab th,.ab td{border:1px solid var(--bd);padding:.6rem;text-align:left}
+        .ab th{background:rgba(102,126,234,.08)}
+
+        .spinner{display:inline-block;width:1.2rem;height:1.2rem;border:3px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .8s linear infinite;margin-right:.5rem;vertical-align:middle}
+        @keyframes spin{to{transform:rotate(360deg)}}
+    </style>
+</head>
+<body>
+<div class="header">
+    <h1>📖 读我</h1>
+    <p>AI 私人学者代读系统 — 让大模型替你仔细读书</p>
+</div>
+
+<div class="wrap">
+    <div class="tabs">
+        <button class="tab active" onclick="sw('read')">📝 开始代读</button>
+        <button class="tab" onclick="sw('hist')">📚 历史报告</button>
+        <button class="tab" onclick="sw('about')">ℹ️ 关于</button>
+    </div>
+
+    <!-- ═══ 代读 ═══ -->
+    <div id="t-read" class="ml">
+        <div class="sb">
+            <div class="card">
+                <h3 style="margin-bottom:1rem">⚙️ 模型配置</h3>
+                <div class="form-group">
+                    <label>🔌 服务商</label>
+                    <select id="provider" onchange="preset()">
+                        <option value="custom">自定义</option>
+                        <option value="deepseek" selected>DeepSeek（推荐）</option>
+                        <option value="openai">OpenAI</option>
+                        <option value="moonshot">Moonshot (Kimi)</option>
+                        <option value="qwen">通义千问</option>
+                    </select>
+                </div>
+                <div class="form-group"><label>🔑 API Key</label><input type="password" id="apiKey" placeholder="sk-..."></div>
+                <div class="form-group"><label>Base URL</label><input type="url" id="baseUrl"></div>
+                <div class="form-group"><label>模型名称</label><input type="text" id="modelName"></div>
+                <button class="btn btn-s btn-sm" style="width:100%" onclick="saveCfg()">💾 保存配置</button>
+            </div>
+        </div>
+        <div class="mc">
+            <div class="card">
+                <div class="rc-group">
+                    <label class="rc sel" onclick="setMode('title',this)"><input type="radio" name="mode" value="title" checked><div class="ic">📕</div><div class="lb">书名搜索</div><div class="ds">输入书名即可</div></label>
+                    <label class="rc" onclick="setMode('file',this)"><input type="radio" name="mode" value="file"><div class="ic">📤</div><div class="lb">文件上传</div><div class="ds">PDF / EPUB / TXT</div></label>
+                    <label class="rc" onclick="setMode('paste',this)"><input type="radio" name="mode" value="paste"><div class="ic">📋</div><div class="lb">粘贴文本</div><div class="ds">直接粘贴内容</div></label>
+                </div>
+                <div id="in-title"><div class="form-group"><label>📕 输入书名</label><input type="text" id="bookTitle" placeholder="例如：思考，快与慢"></div></div>
+                <div id="in-file" style="display:none">
+                    <div class="upload" id="drop" onclick="$('#fileIn').click()"><div class="ic">📁</div><div class="tx">点击或拖拽上传文件</div><div class="tx" style="font-size:.85rem;margin-top:.3rem">支持 PDF、EPUB、TXT</div><div class="fn" id="fName"></div></div>
+                    <input type="file" id="fileIn" accept=".pdf,.epub,.txt,.md" style="display:none" onchange="handleFile(this)">
+                </div>
+                <div id="in-paste" style="display:none"><div class="form-group"><label>📋 粘贴书籍内容</label><textarea id="pastedText" rows="8" placeholder="粘贴书籍章节或内容..."></textarea></div></div>
+                <div class="rc-group">
+                    <label class="rc sel" onclick="setDetail('standard',this)"><input type="radio" name="detail" value="standard" checked><div class="ic">📋</div><div class="lb">标准版</div><div class="ds">5000-10000 字</div></label>
+                    <label class="rc" onclick="setDetail('enhanced',this)"><input type="radio" name="detail" value="enhanced"><div class="ic">📚</div><div class="lb">案例加厚版</div><div class="ds">8000-12000 字</div></label>
+                </div>
+                <button class="btn btn-p" id="goBtn" onclick="generate()" style="width:100%">🚀 开始代读</button>
+            </div>
+            <div id="statusArea"></div>
+            <div id="reportArea" style="display:none">
+                <div class="card">
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem">
+                        <h2 id="rTitle" style="margin:0">📖 代读报告</h2>
+                        <div><button class="btn btn-s btn-sm" onclick="copyReport()">📋 复制</button> <button class="btn btn-s btn-sm" onclick="dlReport()">⬇️ 下载</button></div>
+                    </div>
+                    <div class="prog" id="progArea"><div class="prog-bar"><div class="prog-fill" id="progBar"></div></div><div class="prog-txt" id="progTxt">准备中...</div></div>
+                    <div class="md" id="rBody"></div>
+                </div>
+                <div class="card fu" id="fuArea" style="display:none">
+                    <h3 style="margin-bottom:.8rem">💬 追问</h3>
+                    <div class="fu-in"><input type="text" id="fuQ" placeholder="对报告的某个部分好奇？继续提问..." onkeydown="if(event.key==='Enter')askFU()"><button class="btn btn-p" onclick="askFU()">发送</button></div>
+                    <div class="md" id="fuBody" style="margin-top:1rem"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══ 历史 ═══ -->
+    <div id="t-hist" style="display:none">
+        <div class="card">
+            <div style="display:flex;gap:.75rem;margin-bottom:1rem"><input type="text" id="sInput" placeholder="🔍 搜索报告..." style="flex:1" oninput="renderHist()"><button class="btn btn-s btn-sm" onclick="renderHist()">刷新</button></div>
+            <div id="histList"></div>
+        </div>
+    </div>
+
+    <!-- ═══ 关于 ═══ -->
+    <div id="t-about" style="display:none">
+        <div class="card ab">
+            <h2>📖 关于「读我」</h2>
+            <p><strong>「读我」</strong>是一个纯前端 AI 代读系统。所有数据存在你的浏览器里，不经过任何服务器。</p>
+            <h2>🔒 隐私说明</h2>
+            <ul>
+                <li>你的 API Key <strong>只存在浏览器本地</strong>（localStorage），不会上传到任何地方</li>
+                <li>LLM 调用直接从浏览器发到你选择的模型服务商</li>
+                <li>报告数据存在浏览器 localStorage，清除浏览器数据会丢失</li>
+                <li>建议定期使用「下载」功能备份报告</li>
+            </ul>
+            <h2>📋 报告结构</h2>
+            <ul>
+                <li><strong>🎯 这本书到底在解决什么问题？</strong> — 核心问题 + 作者起心动念</li>
+                <li><strong>🔗 核心主张与论证链条</strong> — 3-5 个主张，每个配书中案例</li>
+                <li><strong>💡 最颠覆直觉的 3 个观点</strong> — 反常识观点 + 关键实验</li>
+                <li><strong>📖 如果只记住一个故事</strong> — 全书最精彩故事的详细转述</li>
+                <li><strong>🤔 我可能会质疑的地方</strong> — 逻辑漏洞与批判分析</li>
+                <li><strong>🛠️ 与我生活的接口</strong> — 普通人能立刻用的行动建议</li>
+            </ul>
+            <h2>🔧 支持的模型</h2>
+            <table>
+                <tr><th>服务商</th><th>推荐模型</th><th>说明</th></tr>
+                <tr><td>DeepSeek</td><td>deepseek-chat</td><td>便宜好用，推荐</td></tr>
+                <tr><td>OpenAI</td><td>gpt-4o</td><td>效果最好</td></tr>
+                <tr><td>Moonshot</td><td>moonshot-v1-128k</td><td>Kimi，中文好</td></tr>
+                <tr><td>通义千问</td><td>qwen-plus</td><td>阿里云</td></tr>
+            </table>
+            <h2>🛠️ 技术说明</h2>
+            <p>纯静态单页应用，无后端、无数据库、无服务端渲染。LLM 调用通过浏览器 Fetch API 直连模型服务商的 OpenAI 兼容接口。文件解析使用 pdf.js（PDF）和 JSZip（EPUB）在浏览器内完成。</p>
+        </div>
+    </div>
+</div>
+
+<!-- pdf.js for PDF parsing -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.4.168/pdf.min.mjs" type="module" id="pdfjs"></script>
+
+<script>
+// ── Helpers ──────────────────────────────────────
+const $ = s => document.querySelector(s);
+const $$ = s => document.querySelectorAll(s);
+
+// ── Presets ──────────────────────────────────────
+const PRESETS = {
+    deepseek: { url:'https://api.deepseek.com/v1', model:'deepseek-chat' },
+    openai:   { url:'https://api.openai.com/v1', model:'gpt-4o' },
+    moonshot: { url:'https://api.moonshot.cn/v1', model:'moonshot-v1-128k' },
+    qwen:     { url:'https://dashscope.aliyuncs.com/compatible-mode/v1', model:'qwen-plus' },
+};
+
+// ── State ────────────────────────────────────────
+let S = { mode:'title', detail:'standard', file:null, streaming:false, curReport:null };
+
+// ── Init ─────────────────────────────────────────
+window.addEventListener('DOMContentLoaded', () => {
+    loadCfg(); preset(); renderHist(); setupDrop();
+});
+
+function loadCfg() {
+    const c = JSON.parse(localStorage.getItem('rc')||'{}');
+    if(c.apiKey)   $('#apiKey').value   = c.apiKey;
+    if(c.baseUrl)  $('#baseUrl').value  = c.baseUrl;
+    if(c.model)    $('#modelName').value = c.model;
+    if(c.provider) $('#provider').value = c.provider;
+}
+function saveCfg() {
+    localStorage.setItem('rc', JSON.stringify({
+        apiKey:$('#apiKey').value, baseUrl:$('#baseUrl').value,
+        model:$('#modelName').value, provider:$('#provider').value
+    }));
+    status('✅ 配置已保存','ok');
+}
+function preset() {
+    const p = $('#provider').value;
+    if(p!=='custom'&&PRESETS[p]) {
+        if(!$('#baseUrl').value||$('#baseUrl').value===Object.values(PRESETS).find(v=>v.url===$('#baseUrl').value)?.url) {
+            $('#baseUrl').value = PRESETS[p].url;
+        }
+        if(!$('#modelName').value||Object.values(PRESETS).some(v=>v.model===$('#modelName').value)) {
+            $('#modelName').value = PRESETS[p].model;
+        }
+    }
+}
+
+// ── Tabs ─────────────────────────────────────────
+function sw(n) {
+    $$('.tab').forEach((t,i)=>t.classList.toggle('active',['read','hist','about'][i]===n));
+    $('#t-read').style.display = n==='read'?'flex':'none';
+    $('#t-hist').style.display = n==='hist'?'block':'none';
+    $('#t-about').style.display = n==='about'?'block':'none';
+    if(n==='hist') renderHist();
+}
+
+// ── Mode / Detail ────────────────────────────────
+function setMode(m,el) {
+    S.mode=m;
+    el.closest('.rc-group').querySelectorAll('.rc').forEach(c=>c.classList.remove('sel'));
+    el.classList.add('sel');
+    $('#in-title').style.display=m==='title'?'block':'none';
+    $('#in-file').style.display=m==='file'?'block':'none';
+    $('#in-paste').style.display=m==='paste'?'block':'none';
+}
+function setDetail(d,el) {
+    S.detail=d;
+    el.closest('.rc-group').querySelectorAll('.rc').forEach(c=>c.classList.remove('sel'));
+    el.classList.add('sel');
+}
+
+// ── File Upload ──────────────────────────────────
+function setupDrop() {
+    const dz=$('#drop');
+    dz.addEventListener('dragover',e=>{e.preventDefault();dz.classList.add('over')});
+    dz.addEventListener('dragleave',()=>dz.classList.remove('over'));
+    dz.addEventListener('drop',e=>{e.preventDefault();dz.classList.remove('over');if(e.dataTransfer.files.length){$('#fileIn').files=e.dataTransfer.files;handleFile($('#fileIn'))}});
+}
+function handleFile(inp) {
+    if(!inp.files.length)return;
+    S.file=inp.files[0];
+    $('#fName').textContent='📎 '+S.file.name;
+}
+
+// ── Status ───────────────────────────────────────
+function status(m,t='inf'){$('#statusArea').innerHTML=`<div class="st ${t}">${m}</div>`}
+function clrStatus(){$('#statusArea').innerHTML=''}
+
+// ── Markdown Renderer ────────────────────────────
+function md(s){
+    return s
+        .replace(/^### (.+)$/gm,'<h3>$1</h3>')
+        .replace(/^## (.+)$/gm,'<h2>$1</h2>')
+        .replace(/^# (.+)$/gm,'<h1>$1</h1>')
+        .replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>')
+        .replace(/\*(.+?)\*/g,'<em>$1</em>')
+        .replace(/`([^`]+)`/g,'<code>$1</code>')
+        .replace(/^- (.+)$/gm,'<li>$1</li>')
+        .replace(/^(\d+)\. (.+)$/gm,'<li>$2</li>')
+        .replace(/(<li>.*<\/li>\n?)+/g,m=>'<ul>'+m+'</ul>')
+        .replace(/^> (.+)$/gm,'<blockquote>$1</blockquote>')
+        .replace(/^---$/gm,'<hr>')
+        .replace(/\n\n/g,'</p><p>')
+        .replace(/\n/g,'<br>');
+}
+
+// ── Generate ─────────────────────────────────────
+async function generate() {
+    const key=$('#apiKey').value.trim(), url=$('#baseUrl').value.trim(), model=$('#modelName').value.trim();
+    if(!key){status('❌ 请先填写 API Key','er');return}
+
+    let title='', content='';
+    if(S.mode==='title'){
+        title=$('#bookTitle').value.trim();
+        if(!title){status('❌ 请输入书名','er');return}
+    } else if(S.mode==='file'){
+        if(!S.file){status('❌ 请上传文件','er');return}
+        status('📄 正在解析文件...');
+        try{const r=await parseFile(S.file);content=r.text;title=r.book_name;status(`✅ 解析完成，${r.chars} 字`,'ok')}catch(e){status(`❌ 解析失败: ${e.message}`,'er');return}
+    } else {
+        content=$('#pastedText').value.trim();
+        if(!content){status('❌ 请粘贴内容','er');return}
+        title='粘贴内容';
+    }
+
+    let sysP = SYS_PROMPT;
+    if(S.detail==='enhanced') sysP += ENH_SUFFIX;
+    let userM = content
+        ? `请代读以下书籍内容。书名：《${title}》\n\n---\n\n${content}`
+        : `请代读《${title}》这本书。请根据你对这本书的了解来生成代读报告。`;
+
+    $('#reportArea').style.display='block';
+    $('#rTitle').textContent=`📖 正在代读《${title}》...`;
+    $('#rBody').innerHTML='';
+    $('#progArea').style.display='block';
+    $('#fuArea').style.display='none';
+    $('#progBar').style.width='0%';
+    $('#progTxt').textContent='正在生成...';
+
+    const btn=$('#goBtn');btn.disabled=true;btn.innerHTML='<span class="spinner"></span> 生成中...';
+    S.streaming=true;
+
+    try {
+        const resp = await fetch(url+'/chat/completions',{
+            method:'POST',
+            headers:{'Content-Type':'application/json','Authorization':`Bearer ${key}`},
+            body:JSON.stringify({model,messages:[{role:'system',content:sysP},{role:'user',content:userM}],temperature:.7,max_tokens:16000,stream:true})
+        });
+        if(!resp.ok){const e=await resp.text();throw new Error(`API 错误 (${resp.status}): ${e}`)}
+
+        const reader=resp.body.getReader(), dec=new TextDecoder();
+        let full='', buf='';
+        while(true){
+            const{done,value}=await reader.read();if(done)break;
+            buf+=dec.decode(value,{stream:true});
+            const lines=buf.split('\n');buf=lines.pop();
+            for(const ln of lines){
+                if(!ln.startsWith('data: '))continue;
+                const d=ln.slice(6).trim();if(d==='[DONE]')continue;
+                try{const j=JSON.parse(d);const c=j.choices?.[0]?.delta?.content;if(c){full+=c;$('#rBody').innerHTML=md(full)+' ▌';$('#progBar').style.width=Math.min(95,full.length/60)+'%'}}catch(e){}
+            }
+        }
+        $('#rBody').innerHTML=md(full);
+        $('#progBar').style.width='100%';
+        $('#progTxt').textContent=`✅ 完成，${full.length} 字`;
+        $('#rTitle').textContent=`📖 代读报告：《${title}》`;
+        saveHist(title,full,S.detail);
+        S.curReport={title,content:full};
+        $('#fuArea').style.display='block';
+        clrStatus();
+    } catch(e){
+        status(`❌ ${e.message}`,'er');
+        $('#progTxt').textContent='❌ 生成失败';
+    } finally {
+        btn.disabled=false;btn.innerHTML='🚀 开始代读';S.streaming=false;
+    }
+}
+
+// ── File Parse ───────────────────────────────────
+async function parseFile(file) {
+    const ext=file.name.split('.').pop().toLowerCase();
+    if(ext==='txt'||ext==='md'){
+        return new Promise(r=>{const fr=new FileReader();fr.onload=()=>r({text:fr.result,book_name:file.name.replace(/\.[^.]+$/,''),chars:fr.result.length});fr.readAsText(file)});
+    }
+    if(ext==='pdf'){
+        return new Promise((resolve,reject)=>{
+            const fr=new FileReader();
+            fr.onload=async()=>{
+                try{
+                    const pdfjsLib=await import('https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.4.168/pdf.min.mjs');
+                    pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.4.168/pdf.worker.min.mjs';
+                    const pdf=await pdfjsLib.getDocument({data:new Uint8Array(fr.result)}).promise;
+                    let text='';
+                    for(let i=1;i<=pdf.numPages;i++){
+                        const page=await pdf.getPage(i);
+                        const tc=await page.getTextContent();
+                        text+=tc.items.map(s=>s.str).join(' ')+'\n\n';
+                    }
+                    resolve({text,book_name:file.name.replace(/\.[^.]+$/,''),chars:text.length});
+                }catch(e){reject(e)}
+            };
+            fr.readAsArrayBuffer(file);
+        });
+    }
+    if(ext==='epub'){
+        return new Promise(async(resolve,reject)=>{
+            try{
+                const JSZip=(await import('https://cdn.jsdelivr.net/npm/jszip@3.10.1/+esm')).default;
+                const fr=new FileReader();
+                fr.onload=async()=>{
+                    const zip=await JSZip.loadAsync(fr.result);
+                    const files=Object.keys(zip.files).filter(f=>f.endsWith('.xhtml')||f.endsWith('.html')||f.endsWith('.htm')).sort();
+                    let text='';
+                    for(const f of files){
+                        const html=await zip.files[f].async('string');
+                        const tmp=document.createElement('div');tmp.innerHTML=html;
+                        text+=tmp.textContent+'\n\n';
+                        if(text.length>200000)break;
+                    }
+                    resolve({text,book_name:file.name.replace(/\.[^.]+$/,''),chars:text.length});
+                };
+                fr.readAsArrayBuffer(file);
+            }catch(e){reject(e)}
+        });
+    }
+    throw new Error('不支持的格式: '+ext);
+}
+
+// ── Followup ─────────────────────────────────────
+async function askFU() {
+    const q=$('#fuQ').value.trim();if(!q||!S.curReport)return;
+    const key=$('#apiKey').value.trim(),url=$('#baseUrl').value.trim(),model=$('#modelName').value.trim();
+    const el=$('#fuBody');el.innerHTML='<em>思考中...</em>';
+    try{
+        const resp=await fetch(url+'/chat/completions',{method:'POST',headers:{'Content-Type':'application/json','Authorization':`Bearer ${key}`},body:JSON.stringify({model,messages:[{role:'system',content:`你是一位私人学者，刚刚为用户代读了《${S.curReport.title}》。以下是代读报告：\n\n${S.curReport.content}\n\n用户追问，请基于书的具体内容回答，保持详细有案例。中文回答。`},{role:'user',content:q}],temperature:.7,max_tokens:8000,stream:true})});
+        const reader=resp.body.getReader(),dec=new TextDecoder();let t='',buf='';
+        while(true){const{done,value}=await reader.read();if(done)break;buf+=dec.decode(value,{stream:true});const lines=buf.split('\n');buf=lines.pop();for(const ln of lines){if(!ln.startsWith('data: '))continue;const d=ln.slice(6).trim();if(d==='[DONE]')continue;try{const j=JSON.parse(d);const c=j.choices?.[0]?.delta?.content;if(c){t+=c;el.innerHTML=md(t)+' ▌'}}catch(e){}}}
+        el.innerHTML=md(t);
+    }catch(e){el.innerHTML=`<div class="st er">❌ ${e.message}</div>`}
+}
+
+// ── History ──────────────────────────────────────
+function getHist(){return JSON.parse(localStorage.getItem('rh')||'[]')}
+function saveHist(t,c,d){const h=getHist();h.unshift({id:Date.now(),title:t,mode:d==='enhanced'?'案例加厚版':'标准版',date:new Date().toLocaleString('zh-CN'),content:c});if(h.length>50)h.length=50;localStorage.setItem('rh',JSON.stringify(h))}
+function renderHist(){
+    const kw=($('#sInput')?.value||'').toLowerCase();
+    let h=getHist();if(kw)h=h.filter(r=>r.title.toLowerCase().includes(kw));
+    const el=$('#histList');
+    if(!h.length){el.innerHTML='<div class="empty"><div class="ic">📭</div><div>还没有报告</div></div>';return}
+    el.innerHTML=h.map(r=>`<div class="hi" onclick="viewR(${r.id})"><div><div class="ti">📖 ${r.title}</div><div class="mt">📅 ${r.date} · 📋 ${r.mode} · ${r.content.length} 字</div></div><button class="btn btn-s btn-sm" onclick="event.stopPropagation();delR(${r.id})">🗑️</button></div>`).join('');
+}
+function viewR(id){
+    const h=getHist().find(r=>r.id===id);if(!h)return;
+    S.curReport={title:h.title,content:h.content};
+    $('#reportArea').style.display='block';
+    $('#rTitle').textContent=`📖 代读报告：《${h.title}》`;
+    $('#rBody').innerHTML=md(h.content);
+    $('#progArea').style.display='none';
+    $('#fuArea').style.display='block';
+    sw('read');window.scrollTo({top:0,behavior:'smooth'});
+}
+function delR(id){if(!confirm('确定删除？'))return;localStorage.setItem('rh',JSON.stringify(getHist().filter(r=>r.id!==id)));renderHist()}
+function copyReport(){if(!S.curReport)return;navigator.clipboard.writeText(S.curReport.content).then(()=>status('✅ 已复制','ok'))}
+function dlReport(){
+    if(!S.curReport)return;
+    const blob=new Blob([S.curReport.content],{type:'text/markdown'});
+    const a=document.createElement('a');a.href=URL.createObjectURL(blob);
+    a.download=`代读报告_${S.curReport.title}_${new Date().toISOString().slice(0,10)}.md`;
+    a.click();URL.revokeObjectURL(a.href);
+}
+
+// ── System Prompt ────────────────────────────────
+const SYS_PROMPT=`你将扮演一位私人学者，替我仔细阅读用户提供的书籍内容，然后按照下面的结构为我呈现内容。
+
+**重要原则**：
+- 不要只给结论，必须保留书中最有说服力的具体案例、实验、故事作为证据。
+- 回答应当是一篇详细的深度转述，不少于 5000 字。
+- 如果你不确定某个细节，请标注"此处信息不确定"，不要编造。
+- 使用中文回答。
+
+请严格按照以下六部分展开，每部分用二级标题（##）标记：
+
+## 一、这本书到底在解决什么问题？
+- 用一句话概括核心问题。
+- 附上书中导致作者想写这本书的那个核心事件或现象，尽量详细。
+
+## 二、核心主张与论证链条
+- 列出本书最主要的 3-5 个主张。
+- 每个主张之下，必须配上书中至少一个具体的例子/实验/人物故事来详细说明。
+- 如果书中某个主张没有提供实证，请标注"作者在此处未给出实例"，不要自己编造。
+
+## 三、最颠覆或最反直觉的 3 个点
+- 摘出书中与大众常识截然相反的观点。
+- 每个点都要附上它用来颠覆读者的那个关键实验或真实案例的详细描述。
+
+## 四、如果只记住一个故事
+- 选出全书最精彩、最适合以后讲给别人听的一个完整故事。
+- 请像写一篇微型小说一样，详细转述其背景、人物、经过、结果和作者的分析。
+- 不少于 800 字。
+
+## 五、我可能会质疑的地方
+- 客观分析书中的论证是否存在逻辑跳跃、以偏概全、幸存者偏差等问题。
+- 如果有，请用书中具体内容举例说明。
+
+## 六、这本书与我生活最直接的一个接口
+- 假设我是一个普通上班族/学生，不创业也不做研究。
+- 从书中挑一个能立刻用上的具体行动建议，并补充原文中的操作细节。
+- 写清楚具体怎么做、什么场景下做、预期什么效果。`;
+
+const ENH_SUFFIX=`
+
+**额外要求（案例加厚版）**：
+- 每个核心主张必须配 2-3 个书中案例，而不是 1 个。
+- "最颠覆直觉"部分扩展为 5 个点。
+- 在每个案例后附加"这个案例之所以有力，是因为……"的分析句。
+- 整体字数目标：8000-12000 字。`;
+</script>
+</body>
+</html>
