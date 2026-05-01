@@ -474,6 +474,15 @@ function showNew(){
   $('#emptyState').style.display='none';
   $('#reportArea').classList.remove('visible');
   state.curReport=null;
+  // Reset to search mode
+  setMode('search', $$('[data-mode="search"]')[0]);
+  // Clear inputs
+  const bt=$('#bookTitle'); if(bt) bt.value='';
+  const pt=$('#pasteText'); if(pt) pt.value='';
+  const fn=$('#dropzoneFilename'); if(fn){fn.textContent='';fn.classList.add('hidden');}
+  state.fileText=''; state.bookName='';
+  // Focus book title
+  setTimeout(()=>{const bt2=$('#bookTitle'); if(bt2) bt2.focus();},100);
   renderLeftList();
 }
 
@@ -482,9 +491,13 @@ function setMode(m, el) {
   state.mode = m;
   $$('.radio-card[data-mode]').forEach(b=>b.classList.remove('active'));
   if(el) el.classList.add('active');
-  $('#searchInputCard').style.display = m==='search' ? '' : 'none';
-  $('#uploadInputCard').style.display = m==='upload' ? '' : 'none';
-  $('#pasteInputCard').style.display = m==='paste' ? '' : 'none';
+  ['searchInputCard','uploadInputCard','pasteInputCard'].forEach(id=>{
+    const e=$('#'+id);
+    if(!e) return;
+    const show = (id==='searchInputCard'&&m==='search')||(id==='uploadInputCard'&&m==='upload')||(id==='pasteInputCard'&&m==='paste');
+    if(show){e.classList.remove('hidden');e.style.display='';}
+    else{e.classList.add('hidden');e.style.display='none';}
+  });
 }
 function setDetail(d, el) {
   state.detail = d;
