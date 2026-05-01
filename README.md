@@ -14,48 +14,52 @@
 - 🔍 **案例加厚版** — 可选更详实的报告模式（8000-12000 字）
 - 💬 **追问功能** — 对报告任意部分继续深入提问
 - 📚 **历史管理** — 保存、搜索、回看所有代读报告
-- 🔌 **灵活接入** — 兼容 OpenAI 接口的任意大模型（GPT-4o、Claude、Gemini 等）
+- 🔌 **灵活接入** — 支持 DeepSeek、GPT-4o、Claude、Moonshot、通义千问等
 
-## 🚀 快速开始
+## 🚀 部署方式
 
-### 1. 克隆项目
+### 方式一：Streamlit Cloud 一键部署（推荐，零成本）
+
+适合：想让别人通过链接直接访问，不用装任何东西。
+
+1. **Fork 本仓库** 到你的 GitHub（点右上角 Fork）
+
+2. 打开 [Streamlit Cloud](https://share.streamlit.io)，用 GitHub 登录
+
+3. 点 **New app**：
+   - Repository: 选你 fork 的 `readme-ai`
+   - Branch: `main`
+   - Main file path: `app.py`
+
+4. 点 **Advanced Settings**，填入：
+   ```toml
+   OPENAI_API_KEY = "sk-你的key"
+   OPENAI_BASE_URL = "https://api.deepseek.com/v1"
+   MODEL_NAME = "deepseek-chat"
+   ```
+
+5. 点 **Deploy** → 等待 1 分钟 → 完成！
+
+你会得到一个 `xxx.streamlit.app` 的公网链接，分享给别人就能用。
+
+### 方式二：本地运行
 
 ```bash
 git clone https://github.com/1311523821/readme-ai.git
 cd readme-ai
-```
-
-### 2. 安装依赖
-
-```bash
 pip install -r requirements.txt
-```
-
-### 3. 配置 API
-
-复制环境变量模板并填入你的 API Key：
-
-```bash
-cp .env.example .env
-```
-
-编辑 `.env`：
-
-```env
-OPENAI_API_KEY=sk-your-api-key-here
-OPENAI_BASE_URL=https://api.openai.com/v1
-MODEL_NAME=gpt-4o
-```
-
-> 💡 支持任何兼容 OpenAI 接口的服务，如 DeepSeek、Moonshot、通义千问等。
-
-### 4. 启动
-
-```bash
+cp .env.example .env   # 编辑 .env 填入 API Key
 streamlit run app.py
 ```
 
-浏览器会自动打开 `http://localhost:8501`。
+浏览器自动打开 `http://localhost:8501`。
+
+### 方式三：Docker
+
+```bash
+docker build -t readme-ai .
+docker run -p 8501:8501 -e OPENAI_API_KEY=sk-xxx readme-ai
+```
 
 ## 📋 代读报告结构
 
@@ -70,32 +74,35 @@ streamlit run app.py
 | 5 | 🤔 我可能会质疑的地方 | 逻辑漏洞、幸存者偏差等批判分析 |
 | 6 | 🛠️ 与我生活的接口 | 普通人能立刻用的行动建议 |
 
+## 🔧 支持的模型
+
+| 服务商 | Base URL | 推荐模型 |
+|--------|----------|----------|
+| DeepSeek | `https://api.deepseek.com/v1` | `deepseek-chat`（便宜好用） |
+| OpenAI | `https://api.openai.com/v1` | `gpt-4o` |
+| Moonshot | `https://api.moonshot.cn/v1` | `moonshot-v1-128k` |
+| 通义千问 | `https://dashscope.aliyuncs.com/compatible-mode/v1` | `qwen-plus` |
+| Anthropic | `https://api.anthropic.com/v1` | `claude-3-5-sonnet` |
+
+> 推荐 DeepSeek：便宜、中文好、长文本能力强。
+
 ## 🏗️ 项目结构
 
 ```
 readme-ai/
-├── app.py              # Streamlit 主界面
-├── engine.py           # 代读引擎（LLM 调用 + 提示词模板）
-├── parsers.py          # 文件解析（PDF / EPUB / TXT）
-├── storage.py          # 存储模块（SQLite + Markdown）
-├── config.py           # 配置管理
-├── requirements.txt    # Python 依赖
-├── .env.example        # 环境变量模板
-├── data/               # 数据目录
-│   ├── reports.db      # SQLite 数据库
-│   └── reports/        # Markdown 报告文件
-└── uploads/            # 临时上传文件
+├── app.py                  # Streamlit 主界面
+├── engine.py               # 代读引擎（提示词 + LLM 调用）
+├── parsers.py              # 文件解析（PDF/EPUB/TXT）
+├── storage.py              # 存储（SQLite + Markdown）
+├── config.py               # 配置管理
+├── requirements.txt        # 依赖
+├── Dockerfile              # Docker 部署
+├── .streamlit/
+│   ├── config.toml         # Streamlit 主题配置
+│   └── secrets.toml.example # 密钥模板
+├── .env.example            # 本地环境变量模板
+└── data/                   # 报告存储目录
 ```
-
-## 🔧 支持的模型
-
-| 模型 | Base URL | 说明 |
-|------|----------|------|
-| GPT-4o | `https://api.openai.com/v1` | OpenAI 官方 |
-| Claude 3.5 | `https://api.anthropic.com/v1` | Anthropic |
-| DeepSeek | `https://api.deepseek.com/v1` | DeepSeek |
-| Moonshot | `https://api.moonshot.cn/v1` | Kimi |
-| 通义千问 | `https://dashscope.aliyuncs.com/compatible-mode/v1` | 阿里云 |
 
 ## 📌 路线图
 

@@ -72,25 +72,34 @@ if "streaming" not in st.session_state:
 
 
 # ── 侧边栏 ──────────────────────────────────────────────
+PRESETS = {
+    "自定义": {"base_url": "", "model": ""},
+    "OpenAI GPT-4o": {"base_url": "https://api.openai.com/v1", "model": "gpt-4o"},
+    "DeepSeek V3": {"base_url": "https://api.deepseek.com/v1", "model": "deepseek-chat"},
+    "Moonshot (Kimi)": {"base_url": "https://api.moonshot.cn/v1", "model": "moonshot-v1-128k"},
+    "通义千问": {"base_url": "https://dashscope.aliyuncs.com/compatible-mode/v1", "model": "qwen-plus"},
+    "Claude (Anthropic)": {"base_url": "https://api.anthropic.com/v1", "model": "claude-3-5-sonnet-20241022"},
+}
+
 with st.sidebar:
     st.markdown("## ⚙️ 配置")
 
+    # 快捷预设
+    provider = st.selectbox("🔌 模型服务商", list(PRESETS.keys()), help="选择预设或自定义")
+    preset = PRESETS[provider]
+
     api_key = st.text_input(
-        "API Key",
+        "🔑 API Key",
         value=config.OPENAI_API_KEY,
         type="password",
-        help="兼容 OpenAI 接口的 API Key",
+        help="填入你的 API Key",
     )
-    base_url = st.text_input(
-        "API Base URL",
-        value=config.OPENAI_BASE_URL,
-        help="如 https://api.openai.com/v1",
-    )
-    model_name = st.text_input(
-        "模型名称",
-        value=config.MODEL_NAME,
-        help="如 gpt-4o、claude-3-5-sonnet 等",
-    )
+
+    default_base = preset["base_url"] or config.OPENAI_BASE_URL
+    default_model = preset["model"] or config.MODEL_NAME
+
+    base_url = st.text_input("API Base URL", value=default_base)
+    model_name = st.text_input("模型名称", value=default_model)
 
     if api_key:
         config.OPENAI_API_KEY = api_key
