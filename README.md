@@ -4,61 +4,77 @@
 
 ![Python](https://img.shields.io/badge/Python-3.10+-blue.svg)
 ![Streamlit](https://img.shields.io/badge/Streamlit-1.30+-red.svg)
+![Vercel](https://img.shields.io/badge/Vercel-Ready-black.svg)
 ![License](https://img.shields.io/badge/License-MIT-green.svg)
 
 ## ✨ 特性
 
-- 📕 **书名代读** — 输入书名，AI 根据知识生成详细代读报告
-- 📤 **文件上传** — 支持 PDF / EPUB / TXT，直接解析原文
-- 📝 **结构化报告** — 固定六章节结构，案例充分、有观点有故事
-- 🔍 **案例加厚版** — 可选更详实的报告模式（8000-12000 字）
+- 📕 **书名代读** — 输入书名，AI 生成 5000-10000 字详细报告
+- 📤 **文件上传** — 支持 PDF / EPUB / TXT，解析原文后代读
+- 📝 **结构化报告** — 固定六章节，案例充分、有观点有故事
+- 🔍 **案例加厚版** — 可选更详实模式（8000-12000 字）
 - 💬 **追问功能** — 对报告任意部分继续深入提问
 - 📚 **历史管理** — 保存、搜索、回看所有代读报告
-- 🔌 **灵活接入** — 支持 DeepSeek、GPT-4o、Claude、Moonshot、通义千问等
+- 🔌 **多模型支持** — DeepSeek、GPT-4o、Claude、Moonshot、通义千问
 
 ## 🚀 部署方式
 
-### 方式一：Streamlit Cloud 一键部署（推荐，零成本）
+### 方式一：Vercel 部署（推荐，免费公网访问）
 
-适合：想让别人通过链接直接访问，不用装任何东西。
+适合：分享给别人用，打开链接就能用，不用装任何东西。
 
-1. **Fork 本仓库** 到你的 GitHub（点右上角 Fork）
+```bash
+cd vercel
+npm i -g vercel
+vercel --prod
+```
 
-2. 打开 [Streamlit Cloud](https://share.streamlit.io)，用 GitHub 登录
+或直接在 [vercel.com](https://vercel.com) 导入 GitHub 仓库，Framework 选 **Other**，Root Directory 填 `vercel`。
 
-3. 点 **New app**：
-   - Repository: 选你 fork 的 `readme-ai`
-   - Branch: `main`
-   - Main file path: `app.py`
+> ⚠️ Vercel 版前端直连 LLM API（避免 serverless 超时），用户需在页面填入自己的 API Key。
 
-4. 点 **Advanced Settings**，填入：
+### 方式二：Streamlit Cloud 部署（免费，自带 API Key）
+
+适合：自己用或小范围分享，API Key 配在服务端。
+
+1. 打开 [share.streamlit.io](https://share.streamlit.io)，GitHub 登录
+2. **New app** → 选 `readme-ai` 仓库 → `app.py`
+3. **Advanced Settings** 填入：
    ```toml
    OPENAI_API_KEY = "sk-你的key"
    OPENAI_BASE_URL = "https://api.deepseek.com/v1"
    MODEL_NAME = "deepseek-chat"
    ```
+4. Deploy → 得到 `xxx.streamlit.app` 链接
 
-5. 点 **Deploy** → 等待 1 分钟 → 完成！
-
-你会得到一个 `xxx.streamlit.app` 的公网链接，分享给别人就能用。
-
-### 方式二：本地运行
+### 方式三：本地运行
 
 ```bash
 git clone https://github.com/1311523821/readme-ai.git
 cd readme-ai
 pip install -r requirements.txt
-cp .env.example .env   # 编辑 .env 填入 API Key
+cp .env.example .env   # 编辑填入 API Key
 streamlit run app.py
 ```
 
-浏览器自动打开 `http://localhost:8501`。
-
-### 方式三：Docker
+### 方式四：Docker
 
 ```bash
 docker build -t readme-ai .
 docker run -p 8501:8501 -e OPENAI_API_KEY=sk-xxx readme-ai
+```
+
+### 方式五：桌面应用（exe）
+
+```bash
+pip install pywebview
+python desktop.py
+```
+
+打包成 exe：
+```bash
+pip install pyinstaller
+pyinstaller --onefile --add-data "app.py:." --add-data "engine.py:." --add-data "parsers.py:." --add-data "storage.py:." --add-data "config.py:." desktop.py
 ```
 
 ## 📋 代读报告结构
@@ -76,15 +92,13 @@ docker run -p 8501:8501 -e OPENAI_API_KEY=sk-xxx readme-ai
 
 ## 🔧 支持的模型
 
-| 服务商 | Base URL | 推荐模型 |
-|--------|----------|----------|
-| DeepSeek | `https://api.deepseek.com/v1` | `deepseek-chat`（便宜好用） |
-| OpenAI | `https://api.openai.com/v1` | `gpt-4o` |
-| Moonshot | `https://api.moonshot.cn/v1` | `moonshot-v1-128k` |
-| 通义千问 | `https://dashscope.aliyuncs.com/compatible-mode/v1` | `qwen-plus` |
-| Anthropic | `https://api.anthropic.com/v1` | `claude-3-5-sonnet` |
-
-> 推荐 DeepSeek：便宜、中文好、长文本能力强。
+| 服务商 | Base URL | 推荐模型 | 说明 |
+|--------|----------|----------|------|
+| DeepSeek | `api.deepseek.com/v1` | `deepseek-chat` | 便宜好用，推荐 |
+| OpenAI | `api.openai.com/v1` | `gpt-4o` | 效果最好 |
+| Moonshot | `api.moonshot.cn/v1` | `moonshot-v1-128k` | Kimi，中文好 |
+| 通义千问 | `dashscope.aliyuncs.com/...` | `qwen-plus` | 阿里云 |
+| Anthropic | `api.anthropic.com/v1` | `claude-3-5-sonnet` | Claude |
 
 ## 🏗️ 项目结构
 
@@ -95,12 +109,16 @@ readme-ai/
 ├── parsers.py              # 文件解析（PDF/EPUB/TXT）
 ├── storage.py              # 存储（SQLite + Markdown）
 ├── config.py               # 配置管理
-├── requirements.txt        # 依赖
+├── desktop.py              # 桌面应用入口（pywebview）
 ├── Dockerfile              # Docker 部署
-├── .streamlit/
-│   ├── config.toml         # Streamlit 主题配置
-│   └── secrets.toml.example # 密钥模板
-├── .env.example            # 本地环境变量模板
+├── requirements.txt        # Python 依赖
+├── .streamlit/             # Streamlit 配置
+├── .env.example            # 环境变量模板
+├── vercel/                 # ← Vercel 部署版（独立）
+│   ├── api/index.py        #   文件解析 API
+│   ├── public/index.html   #   前端单页应用
+│   ├── vercel.json         #   Vercel 配置
+│   └── requirements.txt    #   Python 依赖
 └── data/                   # 报告存储目录
 ```
 
